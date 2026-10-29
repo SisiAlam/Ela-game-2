@@ -1,0 +1,1233 @@
+<!DOCTYPE html> 
+<html class=""> 
+<head> 
+<meta charset="utf-8"> 
+<style> 
+.error-boundary { border: 2px dashed rgba(255, 0, 0, 0.3); position: relative; } 
+.error-boundary::after { content: "⚠️"; position: absolute; top: 0; right: 0; background: rgba(255, 0, 0, 0.1); color: red; font-size: 14px; padding: 2px 6px; border-radius: 0 0 0 4px; pointer-events: none; } 
+.loading-spinner { display: flex; align-items: center; justify-content: center; min-height: 200px; background: linear-gradient(to bottom right, rgba(255,255,255,0.05), rgba(255,255,255,0.1)); border-radius: 0.75rem; backdrop-filter: blur(4px); } 
+.loading-spinner::after { content: ''; width: 3rem; height: 3rem; border: 4px solid rgba(0,0,0,0.1); border-top-color: #0d9488; border-radius: 50%; animation: spin 1s linear infinite; } 
+@keyframes spin { to { transform: rotate(360deg); } } 
+body { background-color: hsl(0 0% 100%); color: hsl(222.2 84% 4.9%); } 
+input, textarea, select { background-color: hsl(0 0% 100%); color: hsl(222.2 84% 4.9%); border-color: hsl(214.3 31.8% 91.4%); } 
+input:focus, textarea:focus, select:focus { outline: none; ring: 2px solid hsl(222.2 84% 4.9%); } 
+button { background-color: hsl(222.2 47.4% 11.2%); color: hsl(210 40% 98%); } 
+button:disabled { opacity: 0.5; cursor: not-allowed; } 
+</style> 
+<script src="https://cdn.tailwindcss.com"></script> 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.js"></script> 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.js"></script> 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script> 
+<script> 
+if (!window.React || !window.ReactDOM) { throw new Error('React or ReactDOM not loaded'); } 
+window.React = React; 
+window.ReactDOM = ReactDOM; 
+window.createPortal = ReactDOM.createPortal; 
+</script> 
+</head> 
+<body class="bg-background text-foreground"> 
+<div id="root"></div> 
+<script> 
+var App = (() => {
+  var __create = Object.create; 
+  var __defProp = Object.defineProperty; 
+  var __defProps = Object.defineProperties; 
+  var __getOwnPropDesc = Object.getOwnPropertyDescriptor; 
+  var __getOwnPropDescs = Object.getOwnPropertyDescriptors; 
+  var __getOwnPropNames = Object.getOwnPropertyNames; 
+  var __getOwnPropSymbols = Object.getOwnPropertySymbols; 
+  var __getProtoOf = Object.getPrototypeOf; 
+  var __hasOwnProp = Object.prototype.hasOwnProperty; 
+  var __propIsEnum = Object.prototype.propertyIsEnumerable; 
+  var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value; 
+  var __spreadValues = (a, b) => { for (var prop in b || (b = {})) if (__hasOwnProp.call(b, prop)) __defNormalProp(a, prop, b[prop]); if (__getOwnPropSymbols) for (var prop of __getOwnPropSymbols(b)) { if (__propIsEnum.call(b, prop)) __defNormalProp(a, prop, b[prop]); } return a; }; 
+  var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b)); 
+  var __objRest = (source, exclude) => { var target = {}; for (var prop in source) if (__hasOwnProp.call(source, prop) && exclude.indexOf(prop) < 0) target[prop] = source[prop]; if (source != null && __getOwnPropSymbols) for (var prop of __getOwnPropSymbols(source)) { if (exclude.indexOf(prop) < 0 && __propIsEnum.call(source, prop)) target[prop] = source[prop]; } return target; }; 
+  var __commonJS = (cb, mod) => function __require() { return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports; }; 
+  var __export = (target, all) => { for (var name in all) __defProp(target, name, { get: all[name], enumerable: true }); }; 
+  var __copyProps = (to, from, except, desc) => { if (from && typeof from === "object" || typeof from === "function") { for (let key of __getOwnPropNames(from)) if (!__hasOwnProp.call(to, key) && key !== except) __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable }); } return to; }; 
+  var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target, mod)); 
+  var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod); 
+  var require_react = __commonJS({ "react-globals:react"(exports, module) { module.exports = window.React; } }); 
+  var stdin_exports = {}; 
+  __export(stdin_exports, { default: () => App }); 
+  var import_react3 = __toESM(require_react()); 
+  var import_react2 = __toESM(require_react()); 
+  var toKebabCase = (string) => string.replace(/([a-z0-9])([A-Z])/g, "1-2").toLowerCase(); 
+  var toCamelCase = (string) => string.replace(/^([A-Z])|[\s-_]+(\w)/g, (match, p1, p2) => p2 ? p2.toUpperCase() : p1.toLowerCase()); 
+  var toPascalCase = (string) => { const camelCase = toCamelCase(string); return camelCase.charAt(0).toUpperCase() + camelCase.slice(1); }; 
+  var mergeClasses = (...classes) => classes.filter((className, index, array) => Boolean(className) && className.trim() !== "" && array.indexOf(className) === index).join(" ").trim(); 
+  var hasA11yProp = (props) => { for (const prop in props) { if (prop.startsWith("aria-") || prop === "role" || prop === "title") return true; } }; 
+  var import_react = __toESM(require_react()); 
+  var defaultAttributes = { xmlns: "http://www.w3.org/2000/svg", width: 24, height: 24, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round" }; 
+  var Icon = (0, import_react.forwardRef)((_a, ref) => {var _b = _a, { color = "currentColor", size = 24, strokeWidth = 2, absoluteStrokeWidth, className = "", children, iconNode } = _b, rest = __objRest(_b, ["color", "size", "strokeWidth", "absoluteStrokeWidth", "className", "children", "iconNode"]); return (0, import_react.createElement)("svg", __spreadValues(__spreadValues(__spreadProps(__spreadValues({ ref }, defaultAttributes), { width: size, height: size, stroke: color, strokeWidth: absoluteStrokeWidth ? Number(strokeWidth) * 24 / Number(size) : strokeWidth, className: mergeClasses("lucide", className) }), !children && !hasA11yProp(rest) && { "aria-hidden": "true" }), rest), [...iconNode.map(([tag, attrs]) => (0, import_react.createElement)(tag, attrs)), ...Array.isArray(children) ? children : [children]]); }); 
+  var createLucideIcon = (iconName, iconNode) => {const Component = (0, import_react2.forwardRef)((_a, ref) => {var _b = _a, { className } = _b, props = __objRest(_b, ["className"]); return (0, import_react2.createElement)(Icon, __spreadValues({ ref, iconNode, className: mergeClasses(`lucide-toKebabCase(toPascalCase(iconName))`,`lucide-{iconName}`, className) }, props)); }); Component.displayName = toPascalCase(iconName); return Component; }; 
+  var ArrowLeft = createLucideIcon("arrow-left", [["path", { d: "m12 19-7-7 7-7", key: "1l729n" }], ["path", { d: "M19 12H5", key: "x3x0zl" }]]); 
+  var CircleCheck = createLucideIcon("circle-check", [["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }], ["path", { d: "m9 12 2 2 4-4", key: "dzmm74" }]]); 
+  var CircleX = createLucideIcon("circle-x", [["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }], ["path", { d: "m15 9-6 6", key: "1uzhvr" }], ["path", { d: "m9 9 6 6", key: "z0biqf" }]]); 
+  var House = createLucideIcon("house", [["path", { d: "M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8", key: "5wwlr5" }], ["path", { d: "M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z", key: "1d0kgt" }]]); 
+  var Play = createLucideIcon("play", [["polygon", { points: "6 3 20 12 6 21 6 3", key: "1oa8hb" }]]); 
+  var Star = createLucideIcon("star", [["path", { d: "M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z", key: "r04s7s" }]]); 
+  var Trash2 = createLucideIcon("trash-2", [["path", { d: "M3 6h18", key: "d0wm0j" }], ["path", { d: "M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6", key: "4alrt4" }], ["path", { d: "M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2", key: "v07s0e" }], ["line", { x1: "10", x2: "10", y1: "11", y2: "17", key: "1uufr5" }], ["line", { x1: "14", x2: "14", y1: "11", y2: "17", key: "xtxkd" }]]); 
+  var Trophy = createLucideIcon("trophy", [["path", { d: "M6 9H4.5a2.5 2.5 0 0 1 0-5H6", key: "17hqa7" }], ["path", { d: "M18 9h1.5a2.5 2.5 0 0 0 0-5H18", key: "lmptdp" }], ["path", { d: "M4 22h16", key: "57wxv0" }], ["path", { d: "M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22", key: "1nw9bq" }], ["path", { d: "M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22", key: "1np0yb" }], ["path", { d: "M18 2H6v7a6 6 0 0 0 12 0V2Z", key: "u46fv3" }]]); 
+  var UserPlus = createLucideIcon("user-plus", [["path", { d: "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2", key: "1yyitq" }], ["circle", { cx: "9", cy: "7", r: "4", key: "nufk8" }], ["line", { x1: "19", x2: "19", y1: "8", y2: "14", key: "1bvyxn" }], ["line", { x1: "22", x2: "16", y1: "11", y2: "11", key: "1shjgl" }]]); 
+  var Users = createLucideIcon("users", [["path", { d: "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2", key: "1yyitq" }], ["path", { d: "M16 3.128a4 4 0 0 1 0 7.744", key: "16gr8j" }], ["path", { d: "M22 21v-2a4 4 0 0 0-3-3.87", key: "kshegd" }], ["circle", { cx: "9", cy: "7", r: "4", key: "nufk8" }]]); 
+  var Volume2 = createLucideIcon("volume-2", [["polygon", { points: "11 5 6 9 2 9 2 15 6 15 11 19 11 5", key: "11181t" }], ["path", { d: "M15.54 8.46a5 5 0 0 1 0 7.07", key: "13ijm6" }], ["path", { d: "M19.07 4.93a10 10 0 0 1 0 14.14", key: "3y5ijw" }]]); 
+  var VolumeX = createLucideIcon("volume-x", [["polygon", { points: "11 5 6 9 2 9 2 15 6 15 11 19 11 5", key: "11181t" }], ["line", { x1: "22", x2: "16", y1: "9", y2: "15", key: "374fdf" }], ["line", { x1: "16", x2: "22", y1: "9", y2: "15", key: "197vzv" }]]); 
+  var Gamepad = createLucideIcon("gamepad-2", [["line", { x1: "6", x2: "10", y1: "12", y2: "12", key: "125if7" }], ["line", { x1: "8", x2: "8", y1: "10", y2: "14", key: "1pjhrm" }], ["rect", { width: "20", height: "12", x: "2", y: "6", rx: "2", key: "120bhh" }], ["circle", { cx: "15", cy: "11", r: "1", key: "1s9mca" }], ["circle", { cx: "17", cy: "13", r: "1", key: "1qj0v5" }]]); 
+  var FastForward = createLucideIcon("fast-forward", [["polygon", { points: "13 19 22 12 13 5 13 19", key: "153j9n" }], ["polygon", { points: "2 19 11 12 2 5 2 19", key: "1oa8hb" }]]);
+
+  var AVATARS = ["🐶", "🐱", "🦊", "🐼", "🦁", "🦄", "🤖", "🚀"];
+
+  var WORKBOOK_DATA = {
+    K: {
+      levelName: "Kindergarten",
+      color: "bg-emerald-400 hover:bg-emerald-500",
+      modules: {
+        story: { 
+          type: "story", 
+          title: "Story: Sam the Cat", 
+          story: "Sam is a fat cat. Sam sat on a mat. A little rat saw Sam. Sam said hello! The rat gave Sam a red apple. They played happily under the bright sun.", 
+          questions: [
+            { type: "Story Question", q: "Who sat on the mat?", options: ["Sam", "A dog", "A bird"], correct: 0, explanation: "The story says 'Sam sat on a mat.'" }, 
+            { type: "Story Question", q: "Who saw Sam?", options: ["A pig", "A rat", "A frog"], correct: 1, explanation: "The text tells us that 'A little rat saw Sam.'" },
+            { type: "Story Question", q: "What fruit did the rat give Sam?", options: ["A banana", "An apple", "A grape"], correct: 1, explanation: "The rat gave Sam a red apple." },
+            { type: "Story Question", q: "What color was the apple?", options: ["Red", "Green", "Blue"], correct: 0, explanation: "The story mentions it was a 'red apple.'" },
+            { type: "Story Question", q: "Where did they play?", options: ["In a cave", "Under the sun", "In the water"], correct: 1, explanation: "They played under the bright sun." },
+            { type: "Story Question", q: "How did Sam greet the rat?", options: ["He barked", "He said hello", "He ran away"], correct: 1, explanation: "The story says 'Sam said hello!'" }
+          ] 
+        },
+        phonics: { 
+          type: "quiz", 
+          title: "Phonics: Letter Sounds & Rhyming", 
+          questions: [
+            { type: "Phonics", q: "Which word rhymes with 'cat'?", options: ["Dog", "Hat", "Sun"], correct: 1, explanation: "'Cat' and 'Hat' both end in the '-at' sound family." }, 
+            { type: "Phonics", q: "What letter does 'Ball' start with?", options: ["A", "B", "C"], correct: 1, explanation: "The word 'Ball' begins with the letter B sound (/b/)." }, 
+            { type: "Phonics", q: "Which word starts with the 'S' sound?", options: ["Sun", "Pig", "Red"], correct: 0, explanation: "'Sun' starts with the /s/ sound made by the letter S." },
+            { type: "Phonics", q: "Which word rhymes with 'dog'?", options: ["Frog", "Cat", "Pen"], correct: 0, explanation: "'Dog' and 'Frog' both end in '-og'." },
+            { type: "Phonics", q: "What letter does 'Apple' start with?", options: ["A", "D", "M"], correct: 0, explanation: "'Apple' starts with the short A sound (/æ/)." },
+            { type: "Phonics", q: "Which word rhymes with 'pen'?", options: ["Ten", "Cup", "Box"], correct: 0, explanation: "'Pen' and 'Ten' both end in '-en'." }
+          ] 
+        },
+        vocab: { 
+          type: "quiz", 
+          title: "Vocabulary & Meanings", 
+          questions: [
+            { type: "Vocabulary", q: "Which one is an animal?", options: ["Chair", "Dog", "Pencil"], correct: 1, explanation: "A dog is a living animal. Chairs and pencils are objects!" }, 
+            { type: "Vocabulary", q: "What color is grass?", options: ["Blue", "Red", "Green"], correct: 2, explanation: "Healthy grass in nature is green." },
+            { type: "Vocabulary", q: "Which item do you wear on your feet?", options: ["Hat", "Shoe", "Ring"], correct: 1, explanation: "Shoes are worn on feet!" },
+            { type: "Vocabulary", q: "Which one can you drink?", options: ["Milk", "Bread", "Fork"], correct: 0, explanation: "Milk is a healthy drinkable liquid." },
+            { type: "Vocabulary", q: "Where do fish live?", options: ["In trees", "In water", "In clouds"], correct: 1, explanation: "Fish swim and breathe in water." },
+            { type: "Vocabulary", q: "What shines in the sky during the day?", options: ["Moon", "Sun", "Lamp"], correct: 1, explanation: "The sun lights up the day sky!" }
+          ] 
+        },
+        syn_ant: { 
+          type: "quiz", 
+          title: "Synonyms & Opposites", 
+          questions: [
+            { type: "Opposites", q: "What is the opposite of 'big'?", options: ["Small", "Tall", "Heavy"], correct: 0, explanation: "'Small' is the opposite of 'big'." }, 
+            { type: "Synonym", q: "Which word means the same as 'glad'?", options: ["Sad", "Happy", "Mad"], correct: 1, explanation: "Both 'glad' and 'happy' mean feeling good!" },
+            { type: "Opposites", q: "What is the opposite of 'hot'?", options: ["Warm", "Cold", "Dry"], correct: 1, explanation: "'Cold' is the opposite of 'hot'." },
+            { type: "Synonym", q: "Which word means the same as 'small'?", options: ["Little", "Huge", "Fast"], correct: 0, explanation: "'Little' and 'small' have the same meaning." },
+            { type: "Opposites", q: "What is the opposite of 'up'?", options: ["Down", "High", "Over"], correct: 0, explanation: "'Down' is the opposite direction of 'up'." },
+            { type: "Synonym", q: "Which word means the same as 'fast'?", options: ["Quick", "Slow", "Quiet"], correct: 0, explanation: "'Quick' and 'fast' both mean high speed!" }
+          ] 
+        },
+        fill_sentence: { 
+          type: "quiz", 
+          title: "Complete the Sentence", 
+          questions: [
+            { type: "Fill in Blank", q: "The sun is in the _____.", options: ["sky", "water", "bed"], correct: 0, explanation: "The sun shines up high in the sky during the day." }, 
+            { type: "Fill in Blank", q: "I eat an _____.", options: ["shoe", "apple", "hat"], correct: 1, explanation: "An apple is a tasty fruit you can eat!" },
+            { type: "Fill in Blank", q: "The dog can _____.", options: ["bark", "fly", "read"], correct: 0, explanation: "Dogs bark to communicate." },
+            { type: "Fill in Blank", q: "She has a red _____.", options: ["ball", "drink", "walk"], correct: 0, explanation: "A ball is an object that can be red." },
+            { type: "Fill in Blank", q: "We sleep in a _____.", options: ["tree", "bed", "cup"], correct: 1, explanation: "We sleep in cozy beds at night." },
+            { type: "Fill in Blank", q: "Fish can _____.", options: ["swim", "run", "climb"], correct: 0, explanation: "Fish use fins to swim in water." }
+          ] 
+        },
+        sentence: { 
+          type: "sentence", 
+          title: "Sentence Builder", 
+          questions: [
+            { words: ["cat", "The", "sat."], correct: "The cat sat.", explanation: "Capitalize 'The' to start the sentence, and end with 'sat.'" }, 
+            { words: ["run.", "I", "can"], correct: "I can run.", explanation: "Start with 'I', then 'can', and finish with 'run.'" },
+            { words: ["is", "red.", "It"], correct: "It is red.", explanation: "Subject ('It') + verb ('is') + color ('red.')." },
+            { words: ["see", "a", "dog.", "I"], correct: "I see a dog.", explanation: "Start with 'I see', followed by 'a dog.'" },
+            { words: ["can", "jump.", "He"], correct: "He can jump.", explanation: "Subject ('He') + action ('can jump.')." },
+            { words: ["like", "apples.", "I"], correct: "I like apples.", explanation: "Subject ('I') + verb ('like') + noun ('apples.')." }
+          ] 
+        }
+      }
+    },
+    1: {
+      levelName: "Grade 1",
+      color: "bg-blue-400 hover:bg-blue-500",
+      modules: {
+        story: { 
+          type: "story", 
+          title: "Story: Tim's Red Ball", 
+          story: "Tim has a big yellow ball. He throws the ball in the park. His dog Rex catches it in his mouth. Tim laughs and gives Rex a treat. Then they sit under a shade tree. Rex wags his tail proudly.", 
+          questions: [
+            { type: "Story Question", q: "Where does Tim throw the ball?", options: ["In the house", "In the park", "At school"], correct: 1, explanation: "The story states: 'He throws the ball in the park.'" }, 
+            { type: "Story Question", q: "What does Rex get for catching it?", options: ["A treat", "A bath", "A nap"], correct: 0, explanation: "Tim gives Rex a treat as a reward!" },
+            { type: "Story Question", q: "What color is Tim's ball?", options: ["Blue", "Yellow", "Red"], correct: 1, explanation: "The text says 'Tim has a big yellow ball.'" },
+            { type: "Story Question", q: "What is the dog's name?", options: ["Rex", "Sam", "Spot"], correct: 0, explanation: "The story mentions 'His dog Rex'." },
+            { type: "Story Question", q: "Where do Tim and Rex sit afterwards?", options: ["Under a shade tree", "On a bench", "In the car"], correct: 0, explanation: "They rest under a shade tree." },
+            { type: "Story Question", q: "What does Rex wag proudly?", options: ["His ear", "His tail", "His paw"], correct: 1, explanation: "Rex wags his tail proudly!" }
+          ] 
+        },
+        phonics: { 
+          type: "quiz", 
+          title: "Phonics & Blends", 
+          questions: [
+            { type: "Phonics", q: "Which word has the 'sh' sound?", options: ["Sun", "Ship", "Top"], correct: 1, explanation: "'Ship' starts with the 'sh' digraph sound (/ʃ/)." }, 
+            { type: "Phonics", q: "Which word ends with 'ing'?", options: ["Ring", "Red", "Run"], correct: 0, explanation: "'Ring' ends with the letters '-ing'." },
+            { type: "Phonics", q: "Which word starts with the 'ch' sound?", options: ["Chair", "Cat", "Star"], correct: 0, explanation: "'Chair' starts with the 'ch' sound." },
+            { type: "Phonics", q: "Which word has a short 'i' sound?", options: ["Pig", "Pie", "Pine"], correct: 0, explanation: "'Pig' uses the short 'i' sound (/ɪ/)." },
+            { type: "Phonics", q: "Which word starts with a blend 'st'?", options: ["Star", "Sun", "Car"], correct: 0, explanation: "'Star' begins with the 'st' consonant blend." },
+            { type: "Phonics", q: "Which word ends with 'ck'?", options: ["Duck", "Dog", "Door"], correct: 0, explanation: "'Duck' ends with the '-ck' spelling." }
+          ] 
+        },
+        vocab: { 
+          type: "quiz", 
+          title: "Vocabulary & Meanings", 
+          questions: [
+            { type: "Vocabulary", q: "What do you use to draw a line?", options: ["Pencil", "Spoon", "Shoe"], correct: 0, explanation: "A pencil is a writing tool used for drawing." }, 
+            { type: "Vocabulary", q: "What is a sweater used for?", options: ["To stay warm", "To swim", "To sleep"], correct: 0, explanation: "We wear cozy sweaters in cold weather to stay warm." },
+            { type: "Vocabulary", q: "What place has lots of books?", options: ["Library", "Bakery", "Park"], correct: 0, explanation: "A library keeps books for people to read." },
+            { type: "Vocabulary", q: "Which vehicle flies in the air?", options: ["Airplane", "Boat", "Bicycle"], correct: 0, explanation: "Airplanes fly through the sky!" },
+            { type: "Vocabulary", q: "What meal do you eat in the morning?", options: ["Breakfast", "Dinner", "Lunch"], correct: 0, explanation: "Breakfast is the morning meal." },
+            { type: "Vocabulary", q: "Which tool cuts paper?", options: ["Scissors", "Ruler", "Glue"], correct: 0, explanation: "Scissors are used to cut paper safely." }
+          ] 
+        },
+        syn_ant: { 
+          type: "quiz", 
+          title: "Synonyms & Antonyms", 
+          questions: [
+            { type: "Opposite", q: "What is the opposite of 'fast'?", options: ["Quick", "Slow", "High"], correct: 1, explanation: "'Slow' is the opposite speed of 'fast'." }, 
+            { type: "Synonym", q: "Which word means the same as 'tiny'?", options: ["Small", "Huge", "Soft"], correct: 0, explanation: "'Tiny' and 'small' both describe something very little." },
+            { type: "Opposite", q: "What is the opposite of 'happy'?", options: ["Sad", "Glad", "Joyful"], correct: 0, explanation: "'Sad' is the opposite emotion of 'happy'." },
+            { type: "Synonym", q: "Which word means the same as 'shout'?", options: ["Yell", "Whisper", "Sleep"], correct: 0, explanation: "'Yell' and 'shout' mean talking very loudly." },
+            { type: "Opposite", q: "What is the opposite of 'hard'?", options: ["Soft", "Solid", "Tough"], correct: 0, explanation: "'Soft' is the opposite texture of 'hard'." },
+            { type: "Synonym", q: "Which word means the same as 'start'?", options: ["Begin", "Stop", "End"], correct: 0, explanation: "'Begin' and 'start' both mean commencing something." }
+          ] 
+        },
+        fill_sentence: { 
+          type: "quiz", 
+          title: "Complete the Sentence", 
+          questions: [
+            { type: "Fill in Blank", q: "Birds fly in the _____.", options: ["ground", "air", "ocean"], correct: 1, explanation: "Birds use their wings to fly up high in the air." }, 
+            { type: "Fill in Blank", q: "We read books at the _____.", options: ["library", "park", "pool"], correct: 0, explanation: "A library is a quiet place full of books to read." },
+            { type: "Fill in Blank", q: "The moon shines at _____.", options: ["night", "noon", "morning"], correct: 0, explanation: "The moon is bright in the night sky." },
+            { type: "Fill in Blank", q: "I wash my hands with _____.", options: ["soap", "dirt", "paper"], correct: 0, explanation: "Soap cleans dirt off hands." },
+            { type: "Fill in Blank", q: "The rain falls from the _____.", options: ["clouds", "grass", "shoes"], correct: 0, explanation: "Rain comes down from clouds." },
+            { type: "Fill in Blank", q: "An elephant is very _____.", options: ["large", "tiny", "flat"], correct: 0, explanation: "Elephants are huge, large animals!" }
+          ] 
+        },
+        sentence: { 
+          type: "sentence", 
+          title: "Sentence Builder", 
+          questions: [
+            { words: ["dog", "The", "runs."], correct: "The dog runs.", explanation: "Subject ('The dog') comes first, followed by the action verb ('runs.')." }, 
+            { words: ["I", "apple.", "eat", "an"], correct: "I eat an apple.", explanation: "Subject ('I'), verb ('eat'), object ('an apple.')." },
+            { words: ["flies", "in", "the", "sky.", "A", "bird"], correct: "A bird flies in the sky.", explanation: "Subject ('A bird') + action/location ('flies in the sky.')." },
+            { words: ["play", "We", "in", "park.", "the"], correct: "We play in the park.", explanation: "Subject ('We') + verb ('play') + location ('in the park.')." },
+            { words: ["cat", "The", "sleeps", "mat.", "on", "the"], correct: "The cat sleeps on the mat.", explanation: "Subject + verb + preposition phrase ('on the mat.')." },
+            { words: ["read", "books", "at", "school.", "They"], correct: "They read books at school.", explanation: "Subject ('They') + verb ('read books') + location." }
+          ] 
+        }
+      }
+    },
+    2: {
+      levelName: "Grade 2",
+      color: "bg-purple-400 hover:bg-purple-500",
+      modules: {
+        story: { 
+          type: "story", 
+          title: "Story: Maya's Beach Day", 
+          story: "Maya and Leo went to the beach. They built a huge sandcastle near the waves. A sneaky bird flew down and took Maya's snack! Leo kindly shared his fruit with her. Later, they collected shiny seashells near the tide.", 
+          questions: [
+            { type: "Story Question", q: "What took Maya's snack?", options: ["A crab", "A sneaky bird", "A dog"], correct: 1, explanation: "The text says 'A sneaky bird flew down and took Maya's snack!'" }, 
+            { type: "Story Question", q: "What did Leo share with Maya?", options: ["His fruit", "His sandwich", "His toy"], correct: 0, explanation: "Leo kindly shared his fruit with his sister Maya." },
+            { type: "Story Question", q: "What did they build near the waves?", options: ["A sandcastle", "A boat", "A fort"], correct: 0, explanation: "They built a huge sandcastle." },
+            { type: "Story Question", q: "Where were Maya and Leo?", options: ["At the beach", "At the zoo", "In a forest"], correct: 0, explanation: "The story takes place at the beach." },
+            { type: "Story Question", q: "What did they collect later?", options: ["Shiny seashells", "Rocks", "Seaweed"], correct: 0, explanation: "They collected shiny seashells near the tide." },
+            { type: "Story Question", q: "How did Leo act when Maya lost her snack?", options: ["Kindly", "Meanly", "Angrily"], correct: 0, explanation: "Leo 'kindly shared his fruit with her.'" }
+          ] 
+        },
+        phonics: { 
+          type: "quiz", 
+          title: "Phonics & Vowel Teams", 
+          questions: [
+            { type: "Phonics", q: "Which word has a long 'a' sound?", options: ["Cat", "Rain", "Hat"], correct: 1, explanation: "The vowel team 'ai' in 'Rain' creates the long 'A' sound (/eɪ/)." }, 
+            { type: "Phonics", q: "Which word has the silent 'e' sound?", options: ["Kite", "Kit", "Kot"], correct: 0, explanation: "The silent 'e' on the end of 'Kite' makes the 'i' say its long name!" },
+            { type: "Phonics", q: "Which word has the 'ea' vowel team?", options: ["Beach", "Bat", "Bed"], correct: 0, explanation: "'Beach' features the 'ea' vowel team making long E." },
+            { type: "Phonics", q: "Which word ends with 'ight'?", options: ["Light", "Late", "Lot"], correct: 0, explanation: "'Light' uses the silent trigraph '-ight'." },
+            { type: "Phonics", q: "Which word has the long 'o' sound?", options: ["Boat", "Bat", "Box"], correct: 0, explanation: "'Boat' uses 'oa' to spell long O." },
+            { type: "Phonics", q: "Which word starts with 'kn' silent k?", options: ["Knee", "King", "Kangaroo"], correct: 0, explanation: "'Knee' has a silent K before N!" }
+          ] 
+        },
+        vocab: { 
+          type: "quiz", 
+          title: "Vocabulary & Meanings", 
+          questions: [
+            { type: "Vocabulary", q: "What does 'shelter' mean?", options: ["A safe place to live", "A type of food", "A fast car"], correct: 0, explanation: "A shelter is a structure that protects living things from weather and danger." }, 
+            { type: "Vocabulary", q: "What is an 'author'?", options: ["A painter", "A writer of books", "A doctor"], correct: 1, explanation: "An author is a person who writes stories or books." },
+            { type: "Vocabulary", q: "What does 'enormous' mean?", options: ["Very small", "Extremely huge", "Very fast"], correct: 1, explanation: "'Enormous' means gigantic or very big." },
+            { type: "Vocabulary", q: "What is an 'illustrator'?", options: ["Person who draws pictures", "Person who sings", "A pilot"], correct: 0, explanation: "An illustrator creates pictures for books." },
+            { type: "Vocabulary", q: "What does 'furious' mean?", options: ["Very angry", "Very happy", "Sleepy"], correct: 0, explanation: "'Furious' means feeling extreme anger." },
+            { type: "Vocabulary", q: "What is a 'predict'?", options: ["Guessing what happens next", "Writing a poem", "Running fast"], correct: 0, explanation: "To predict means making an educated guess about the future." }
+          ] 
+        },
+        syn_ant: { 
+          type: "quiz", 
+          title: "Synonyms & Antonyms", 
+          questions: [
+            { type: "Antonym", q: "What is the antonym of 'arrive'?", options: ["Depart (Leave)", "Come", "Stay"], correct: 0, explanation: "'Depart' means to leave, which is the antonym of 'arrive'." }, 
+            { type: "Synonym", q: "What is a synonym for 'wealthy'?", options: ["Poor", "Rich", "Funny"], correct: 1, explanation: "'Wealthy' and 'rich' both mean having a lot of money." },
+            { type: "Antonym", q: "What is the antonym of 'brave'?", options: ["Scared", "Strong", "Bold"], correct: 0, explanation: "'Scared' or cowardly is the opposite of 'brave'." },
+            { type: "Synonym", q: "What is a synonym for 'silent'?", options: ["Loud", "Quiet", "Bright"], correct: 1, explanation: "'Quiet' and 'silent' mean without noise." },
+            { type: "Antonym", q: "What is the antonym of 'full'?", options: ["Empty", "Heavy", "Packed"], correct: 0, explanation: "'Empty' is the opposite state of 'full'." },
+            { type: "Synonym", q: "What is a synonym for 'neat'?", options: ["Messy", "Tidy", "Dirty"], correct: 1, explanation: "'Tidy' means organized, same as 'neat'." }
+          ] 
+        },
+        fill_sentence: { 
+          type: "quiz", 
+          title: "Complete the Sentence", 
+          questions: [
+            { type: "Fill in Blank", q: "She put the flower into the glass _____.", options: ["vase", "shoe", "paper"], correct: 0, explanation: "A vase holds water to keep cut flowers fresh." }, 
+            { type: "Fill in Blank", q: "The stars shine brightly at _____.", options: ["noon", "night", "morning"], correct: 1, explanation: "Stars are visible in the dark night sky." },
+            { type: "Fill in Blank", q: "A camel can survive in the hot _____.", options: ["desert", "freezer", "forest"], correct: 0, explanation: "Deserts are hot, dry habitats." },
+            { type: "Fill in Blank", q: "Please turn off the _____ when leaving.", options: ["lights", "doors", "floors"], correct: 0, explanation: "Lights are turned off to save electricity." },
+            { type: "Fill in Blank", q: "The firefighter put out the _____.", options: ["fire", "water", "cloud"], correct: 0, explanation: "Firefighters extinguish dangerous fires." },
+            { type: "Fill in Blank", q: "An octopus has eight long _____.", options: ["arms", "wings", "ears"], correct: 0, explanation: "Octopuses have eight tentacles/arms." }
+          ] 
+        },
+        sentence: { 
+          type: "sentence", 
+          title: "Sentence Builder", 
+          questions: [
+            { words: ["built", "Maya", "sandcastle.", "a"], correct: "Maya built a sandcastle.", explanation: "Subject ('Maya') + action ('built') + object ('a sandcastle.')." }, 
+            { words: ["tall.", "giraffe", "is", "The"], correct: "The giraffe is tall.", explanation: "Subject ('The giraffe') + verb ('is') + adjective ('tall.')." },
+            { words: ["shared", "his", "Leo", "snack.", "kindly"], correct: "Leo kindly shared his snack.", explanation: "Subject + adverb + verb + object." },
+            { words: ["collected", "seashells", "They", "the", "beach.", "at"], correct: "They collected seashells at the beach.", explanation: "Subject ('They') + action ('collected seashells') + place." },
+            { words: ["author", "wrote", "The", "exciting", "an", "book."], correct: "The author wrote an exciting book.", explanation: "Subject ('The author') + verb ('wrote') + noun phrase." },
+            { words: ["shines", "brightly", "sun", "The", "today."], correct: "The sun shines brightly today.", explanation: "Subject ('The sun') + verb ('shines') + adverb + time." }
+          ] 
+        }
+      }
+    },
+    3: {
+      levelName: "Grade 3",
+      color: "bg-amber-400 hover:bg-amber-500",
+      modules: {
+        story: { 
+          type: "story", 
+          title: "Story: The Zoo Adventure", 
+          story: "Class 3 visited the zoo on Tuesday. They saw tall giraffes nibbling green leaves. Max dropped his blue hat into the pen! The helper used a long stick to safely fetch it. Max cheered and thanked the kind zookeeper.", 
+          questions: [
+            { type: "Story Question", q: "Where did Class 3 go on Tuesday?", options: ["The zoo", "The museum", "The farm"], correct: 0, explanation: "The story begins with 'Class 3 visited the zoo on Tuesday.'" }, 
+            { type: "Story Question", q: "How was Max's hat recovered?", options: ["A stick was used", "Max climbed in", "The monkey threw it"], correct: 0, explanation: "The zookeeper helper used a long stick to reach into the pen." },
+            { type: "Story Question", q: "What were the giraffes eating?", options: ["Green leaves", "Meat", "Bananas"], correct: 0, explanation: "The story states giraffes were 'nibbling green leaves.'" },
+            { type: "Story Question", q: "What color was Max's hat?", options: ["Blue", "Red", "Yellow"], correct: 0, explanation: "Max dropped his 'blue hat'." },
+            { type: "Story Question", q: "How did Max react when he got his hat back?", options: ["He cheered and thanked the helper", "He cried", "He left"], correct: 0, explanation: "Max cheered and thanked the kind zookeeper." },
+            { type: "Story Question", q: "Which class visited the zoo?", options: ["Class 3", "Kindergarten", "Class 5"], correct: 0, explanation: "Class 3 went on the trip." }
+          ] 
+        },
+        phonics: { 
+          type: "quiz", 
+          title: "Phonics & Word Endings", 
+          questions: [
+            { type: "Phonics", q: "Which suffix means 'full of'?", options: ["-ful", "-less", "-ed"], correct: 0, explanation: "The suffix '-ful' means full of (e.g., joyful = full of joy)." }, 
+            { type: "Phonics", q: "Which word ends with 'tion'?", options: ["Action", "Active", "Act"], correct: 0, explanation: "'Action' uses the '-tion' suffix pronounced /ʃən/." },
+            { type: "Phonics", q: "Which suffix means 'without'?", options: ["-less", "-ful", "-ing"], correct: 0, explanation: "Suffix '-less' means without (e.g., hopeless = without hope)." },
+            { type: "Phonics", q: "Which prefix means 'not'?", options: ["Un-", "Re-", "Pre-"], correct: 0, explanation: "Prefix 'un-' flips the meaning to 'not'." },
+            { type: "Phonics", q: "Which word contains a soft 'c' sound?", options: ["Circle", "Cat", "Cup"], correct: 0, explanation: "'Circle' starts with soft C sound /s/." },
+            { type: "Phonics", q: "Which word contains a soft 'g' sound?", options: ["Giant", "Goat", "Gum"], correct: 0, explanation: "'Giant' uses the soft G sound /dʒ/." }
+          ] 
+        },
+        vocab: { 
+          type: "quiz", 
+          title: "Vocabulary & Meanings", 
+          questions: [
+            { type: "Vocabulary", q: "What does 'curious' mean?", options: ["Eager to learn or know", "Extremely tired", "Very noisy"], correct: 0, explanation: "Being 'curious' means you want to learn more about something!" }, 
+            { type: "Vocabulary", q: "What is a 'habitat'?", options: ["A home for an animal", "A bad habit", "A warm coat"], correct: 0, explanation: "A habitat is the natural environment where an animal or plant lives." },
+            { type: "Vocabulary", q: "What does 'exhausted' mean?", options: ["Extremely tired", "Full of energy", "Hungry"], correct: 0, explanation: "'Exhausted' means completely worn out and tired." },
+            { type: "Vocabulary", q: "What is an 'ecosystem'?", options: ["A community of living things", "A computer game", "A weather storm"], correct: 0, explanation: "An ecosystem is a community of living organisms interacting with their environment." },
+            { type: "Vocabulary", q: "What does 'migrate' mean?", options: ["Moving from one region to another", "Sleeping through winter", "Eating leaves"], correct: 0, explanation: "To migrate means to travel seasonally from one region to another." },
+            { type: "Vocabulary", q: "What does 'hibernate' mean?", options: ["Sleeping through winter", "Flying south", "Hunting for food"], correct: 0, explanation: "Hibernation is a deep sleep during cold winter months." }
+          ] 
+        },
+        syn_ant: { 
+          type: "quiz", 
+          title: "Synonyms & Antonyms", 
+          questions: [
+            { type: "Antonym", q: "What is the antonym of 'difficult'?", options: ["Hard", "Easy", "Heavy"], correct: 1, explanation: "'Easy' is the direct opposite (antonym) of 'difficult'." }, 
+            { type: "Synonym", q: "What is a synonym for 'courageous'?", options: ["Scared", "Brave", "Quiet"], correct: 1, explanation: "'Courageous' and 'brave' both describe showing no fear." },
+            { type: "Antonym", q: "What is the antonym of 'ancient'?", options: ["Modern", "Old", "Historic"], correct: 0, explanation: "'Modern' means new, opposite of 'ancient'." },
+            { type: "Synonym", q: "What is a synonym for 'gigantic'?", options: ["Huge", "Tiny", "Weak"], correct: 0, explanation: "'Gigantic' and 'huge' mean extremely large." },
+            { type: "Antonym", q: "What is the antonym of 'frequent'?", options: ["Rare", "Common", "Often"], correct: 0, explanation: "'Rare' means happening seldom, opposite of 'frequent'." },
+            { type: "Synonym", q: "What is a synonym for 'furious'?", options: ["Angry", "Calm", "Gentle"], correct: 0, explanation: "'Furious' means very angry." }
+          ] 
+        },
+        fill_sentence: { 
+          type: "quiz", 
+          title: "Complete the Sentence", 
+          questions: [
+            { type: "Fill in Blank", q: "Honey bees work together to build a _____.", options: ["hive", "nest", "cave"], correct: 0, explanation: "Bees build and live together in a beehive." }, 
+            { type: "Fill in Blank", q: "The sun provides warmth and _____ to Earth.", options: ["light", "darkness", "rain"], correct: 0, explanation: "Sunlight brings light and energy to our planet." },
+            { type: "Fill in Blank", q: "Monarch butterflies migrate south in the _____.", options: ["autumn", "spring", "underwater"], correct: 0, explanation: "Butterflies migrate south as temperatures drop in autumn." },
+            { type: "Fill in Blank", q: "Plant roots absorb water from the _____.", options: ["soil", "clouds", "air"], correct: 0, explanation: "Roots suck up nutrient-rich water from soil." },
+            { type: "Fill in Blank", q: "A compass points toward the magnetic _____.", options: ["North", "Sky", "Ocean"], correct: 0, explanation: "Compass needles align toward North." },
+            { type: "Fill in Blank", q: "Thermometers are used to measure _____.", options: ["temperature", "length", "weight"], correct: 0, explanation: "Thermometers gauge how hot or cold things are." }
+          ] 
+        },
+        sentence: { 
+          type: "sentence", 
+          title: "Sentence Builder", 
+          questions: [
+            { words: ["shared", "his", "Leo", "fruit."], correct: "Leo shared his fruit.", explanation: "Subject ('Leo') + verb ('shared') + object ('his fruit.')." }, 
+            { words: ["giraffe", "tall", "ate", "The", "leaves."], correct: "The tall giraffe ate leaves.", explanation: "Subject phrase ('The tall giraffe') + action ('ate leaves.')." },
+            { words: ["visited", "Class 3", "zoo.", "the", "on Tuesday"], correct: "Class 3 visited the zoo. on Tuesday", explanation: "Subject + verb phrase + prepositional time phrase." },
+            { words: ["helper", "used", "The", "long", "a", "stick."], correct: "The helper used a long stick.", explanation: "Subject + action + adjective + object." },
+            { words: ["bees", "Honey", "build", "a", "beehive."], correct: "Honey bees build a beehive.", explanation: "Noun subject + verb + object." },
+            { words: ["roots", "Plant", "absorb", "water.", "soil"], correct: "Plant roots absorb soil water.", explanation: "Subject + action + compound noun object." }
+          ] 
+        }
+      }
+    },
+    4: {
+      levelName: "Grade 4",
+      color: "bg-orange-400 hover:bg-orange-500",
+      modules: {
+        story: { 
+          type: "story", 
+          title: "Story: The Ancient Ruin", 
+          story: "Deep inside the emerald jungle, Arthur discovered an ancient stone ruin covered in thick vines. He gently wiped away moss to reveal a strange symbol carved into the pillar. His compass spun wildly, indicating magnetic energy nearby. Arthur carefully sketched the symbol in his journal for study.", 
+          questions: [
+            { type: "Story Question", q: "Where was the stone ruin?", options: ["In the jungle", "In a desert", "On a snowy peak"], correct: 0, explanation: "Arthur found the ruin 'Deep inside the emerald jungle.'" }, 
+            { type: "Story Question", q: "What did Arthur discover carved in stone?", options: ["A strange symbol", "A wooden treasure", "A map"], correct: 0, explanation: "The story notes he found 'a strange symbol carved into the pillar.'" },
+            { type: "Story Question", q: "Why did Arthur's compass spin wildly?", options: ["Due to magnetic energy", "It was broken", "It was windy"], correct: 0, explanation: "It spun 'indicating magnetic energy nearby.'" },
+            { type: "Story Question", q: "Where did Arthur record his drawing?", options: ["In his journal", "On a tree", "On his hand"], correct: 0, explanation: "He sketched the symbol in his journal." },
+            { type: "Story Question", q: "What covered the stone ruin?", options: ["Thick vines", "Snow", "Sand dunes"], correct: 0, explanation: "The ruin was 'covered in thick vines.'" },
+            { type: "Story Question", q: "What did Arthur gently wipe away from the pillar?", options: ["Moss", "Paint", "Dust"], correct: 0, explanation: "He 'gently wiped away moss'." }
+          ] 
+        },
+        phonics: { 
+          type: "quiz", 
+          title: "Phonics & Syllables", 
+          questions: [
+            { type: "Phonics", q: "How many syllables are in 'understanding'?", options: ["2", "3", "4"], correct: 2, explanation: "Un-der-stand-ing has 4 distinct vowel beats (syllables)." }, 
+            { type: "Phonics", q: "Which prefix means 'again'?", options: ["Re-", "Un-", "Dis-"], correct: 0, explanation: "The prefix 're-' means to do again (e.g., replay = play again)." },
+            { type: "Phonics", q: "Which suffix turns a noun into an adjective meaning 'like'?", options: ["-ish", "-ly", "-ness"], correct: 0, explanation: "Suffix '-ish' forms adjectives like 'childish'." },
+            { type: "Phonics", q: "How many syllables are in 'ecosystem'?", options: ["2", "4", "5"], correct: 1, explanation: "E-co-sys-tem has 4 syllables." },
+            { type: "Phonics", q: "Which prefix means 'below' or 'under'?", options: ["Sub-", "Super-", "Inter-"], correct: 0, explanation: "Prefix 'sub-' means below (e.g., submarine)." },
+            { type: "Phonics", q: "Which prefix means 'between'?", options: ["Inter-", "Pre-", "Anti-"], correct: 0, explanation: "Prefix 'inter-' means between (e.g., international)." }
+          ] 
+        },
+        vocab: { 
+          type: "quiz", 
+          title: "Vocabulary & Meanings", 
+          questions: [
+            { type: "Vocabulary", q: "What does 'perilous' mean?", options: ["Full of danger", "Easy and simple", "Boring"], correct: 0, explanation: "'Perilous' means full of severe risk or danger." }, 
+            { type: "Vocabulary", q: "What does 'abundant' mean?", options: ["Existing in large quantities", "Very rare", "Broken"], correct: 0, explanation: "When something is 'abundant', there is a large, plentiful amount." },
+            { type: "Vocabulary", q: "What does 'solitary' mean?", options: ["Living or being alone", "Crowded", "Loud"], correct: 0, explanation: "'Solitary' means done or existing alone." },
+            { type: "Vocabulary", q: "What does 'reluctant' mean?", options: ["Unwilling and hesitant", "Eager", "Excited"], correct: 0, explanation: "Being 'reluctant' means feeling hesitant or unwilling." },
+            { type: "Vocabulary", q: "What is a 'hypothesis'?", options: ["An educated scientific testable guess", "A proven fact", "A book title"], correct: 0, explanation: "A hypothesis is a testable prediction." },
+            { type: "Vocabulary", q: "What does 'submerged' mean?", options: ["Completely under water", "High in sky", "Dry"], correct: 0, explanation: "'Submerged' means covered or sunken under liquid." }
+          ] 
+        },
+        syn_ant: { 
+          type: "quiz", 
+          title: "Synonyms & Antonyms", 
+          questions: [
+            { type: "Antonym", q: "What is the antonym of 'ancient'?", options: ["Modern", "Old", "Ruined"], correct: 0, explanation: "'Modern' (new) is the antonym of 'ancient' (very old)." }, 
+            { type: "Synonym", q: "What is a synonym for 'swiftly'?", options: ["Slowly", "Quickly", "Carelessly"], correct: 1, explanation: "'Swiftly' and 'quickly' both describe moving with high speed." },
+            { type: "Antonym", q: "What is the antonym of 'plentiful'?", options: ["Scarce", "Abundant", "Enough"], correct: 0, explanation: "'Scarce' means limited, opposite of 'plentiful'." },
+            { type: "Synonym", q: "What is a synonym for 'fearsome'?", options: ["Terrifying", "Friendly", "Gentle"], correct: 0, explanation: "'Fearsome' and 'terrifying' mean causing fear." },
+            { type: "Antonym", q: "What is the antonym of 'conceal'?", options: ["Reveal", "Hide", "Cover"], correct: 0, explanation: "'Reveal' means to show, opposite of 'conceal' (hide)." },
+            { type: "Synonym", q: "What is a synonym for 'vivid'?", options: ["Bright and clear", "Dull", "Faded"], correct: 0, explanation: "'Vivid' means producing powerful, bright images." }
+          ] 
+        },
+        fill_sentence: { 
+          type: "quiz", 
+          title: "Complete the Sentence", 
+          questions: [
+            { type: "Fill in Blank", q: "The heavy rain caused the river to _____.", options: ["overflow", "freeze", "shrink"], correct: 0, explanation: "Excess water fills up rivers past their banks, causing them to overflow." }, 
+            { type: "Fill in Blank", q: "Scientists form a _____ before testing an idea.", options: ["hypothesis", "conclusion", "game"], correct: 0, explanation: "A hypothesis is an educated prediction made before testing." },
+            { type: "Fill in Blank", q: "Solar panels convert energy from the _____ into electricity.", options: ["sun", "wind", "coal"], correct: 0, explanation: "Solar technology converts sunlight into electrical energy." },
+            { type: "Fill in Blank", q: "Volcanic eruptions release hot molten _____.", options: ["lava", "ice", "steam"], correct: 0, explanation: "Volcanoes spew liquid rock called lava." },
+            { type: "Fill in Blank", q: "The archaeologist uncovered an ancient _____ artifact.", options: ["burled", "electronic", "plastic"], correct: 0, explanation: "Archaeologists excavate buried historical items." },
+            { type: "Fill in Blank", q: "Earth's gravity pulls objects toward its _____.", options: ["center", "surface sky", "orbit"], correct: 0, explanation: "Gravity attracts mass toward Earth's center." }
+          ] 
+        },
+        sentence: { 
+          type: "sentence", 
+          title: "Sentence Builder", 
+          questions: [
+            { words: ["found", "Arthur", "ruin.", "an", "ancient"], correct: "Arthur found an ancient ruin.", explanation: "Subject ('Arthur') + verb ('found') + object ('an ancient ruin.')." }, 
+            { words: ["symbol", "was", "carved", "A", "in", "stone."], correct: "A symbol was carved in stone.", explanation: "Passive sentence: Subject ('A symbol') + verb ('was carved in stone.')." },
+            { words: ["wildly.", "spun", "compass", "His", "magnetic"], correct: "His magnetic compass spun wildly.", explanation: "Subject + verb + adverb." },
+            { words: ["symbol", "sketched", "He", "journal.", "his", "in"], correct: "He sketched symbol in his journal.", explanation: "Subject + verb + object + prepositional location." },
+            { words: ["panels", "Solar", "absorb", "energy.", "sunlight"], correct: "Solar panels absorb sunlight energy.", explanation: "Subject noun phrase + verb + compound noun." },
+            { words: ["erupted", "lava.", "The", "spewing", "volcano"], correct: "The volcano erupted spewing lava.", explanation: "Subject + verb + participle phrase." }
+          ] 
+        }
+      }
+    },
+    5: {
+      levelName: "Grade 5",
+      color: "bg-rose-500 hover:bg-rose-600",
+      modules: {
+        story: { 
+          type: "story", 
+          title: "Story: The Space Voyage", 
+          story: "Captain Zara steered the Stargazer through an unpredictable asteroid belt. Alarms echoed as space dust grazed the hull, but she smoothly engaged hyper-drive to break into safe orbit. The crew cheered as the distant blue planet materialized on their main viewscreen.", 
+          questions: [
+            { type: "Story Question", q: "Who navigated through the asteroid belt?", options: ["Captain Zara", "Arthur", "Leo"], correct: 0, explanation: "The story states: 'Captain Zara steered the Stargazer...'" }, 
+            { type: "Story Question", q: "How did they escape the debris?", options: ["Engaged hyper-drive", "Stopped the engine", "Landed on a planet"], correct: 0, explanation: "Zara engaged hyper-drive to quickly boost out of danger." },
+            { type: "Story Question", q: "What was the name of Captain Zara's ship?", options: ["The Stargazer", "Apollo", "Enterprise"], correct: 0, explanation: "The ship was named 'the Stargazer'." },
+            { type: "Story Question", q: "What appeared on the main viewscreen?", options: ["A distant blue planet", "An enemy ship", "A black hole"], correct: 0, explanation: "A 'distant blue planet materialized on their main viewscreen.'" },
+            { type: "Story Question", q: "What grazed the hull of the ship?", options: ["Space dust", "Comet tail", "Solar flare"], correct: 0, explanation: "The text says 'space dust grazed the hull'." },
+            { type: "Story Question", q: "How did the crew react when reaching orbit?", options: ["They cheered", "They panicked", "They slept"], correct: 0, explanation: "The crew cheered as the planet appeared." }
+          ] 
+        },
+        phonics: { 
+          type: "quiz", 
+          title: "Phonics & Root Words", 
+          questions: [
+            { type: "Phonics", q: "What is the root word of 'uncomfortable'?", options: ["Comfort", "Able", "Un"], correct: 0, explanation: "'Comfort' is the core root word surrounded by prefix 'un-' and suffix '-able'." }, 
+            { type: "Phonics", q: "Which suffix turns an adjective into an adverb?", options: ["-ly", "-ness", "-able"], correct: 0, explanation: "Adding '-ly' turns words like 'quick' (adjective) into 'quickly' (adverb)." },
+            { type: "Phonics", q: "What is the Greek root meaning 'light'?", options: ["Photo", "Geo", "Bio"], correct: 0, explanation: "'Photo' comes from Greek meaning light (e.g., photograph, photosynthesis)." },
+            { type: "Phonics", q: "What is the Latin root meaning 'water'?", options: ["Aqua", "Terra", "Aero"], correct: 0, explanation: "'Aqua' means water (e.g., aquarium, aquatic)." },
+            { type: "Phonics", q: "What is the Greek root meaning 'life'?", options: ["Bio", "Chron", "Phon"], correct: 0, explanation: "'Bio' means life (e.g., biology, biography)." },
+            { type: "Phonics", q: "What is the Greek root meaning 'time'?", options: ["Chron", "Geo", "Scope"], correct: 0, explanation: "'Chron' means time (e.g., chronological, chronicle)." }
+          ] 
+        },
+        vocab: { 
+          type: "quiz", 
+          title: "Vocabulary & Meanings", 
+          questions: [
+            { type: "Vocabulary", q: "What does 'inevitable' mean?", options: ["Certain to happen", "Unlikely to occur", "Happening by luck"], correct: 0, explanation: "'Inevitable' means impossible to avoid; bound to occur." }, 
+            { type: "Vocabulary", q: "What does 'comprehend' mean?", options: ["To understand fully", "To ignore", "To write down"], correct: 0, explanation: "'Comprehend' means to grasp or understand the full meaning of something." },
+            { type: "Vocabulary", q: "What does 'meticulous' mean?", options: ["Showing extreme care and detail", "Careless", "Quick and sloppy"], correct: 0, explanation: "'Meticulous' means taking extreme care about tiny details." },
+            { type: "Vocabulary", q: "What does 'benevolent' mean?", options: ["Kind and generous", "Cruel", "Selfish"], correct: 0, explanation: "Being 'benevolent' means well-meaning and kindly." },
+            { type: "Vocabulary", q: "What is an 'inference'?", options: ["A conclusion based on evidence and reasoning", "A direct guess", "A dictionary definition"], correct: 0, explanation: "An inference is drawn from clues and existing knowledge." },
+            { type: "Vocabulary", q: "What does 'chronological' mean?", options: ["Arranged in order of time occurrence", "Random order", "Alphabetical"], correct: 0, explanation: "Chronological means arranged sequentially by time." }
+          ] 
+        },
+        syn_ant: { 
+          type: "quiz", 
+          title: "Synonyms & Antonyms", 
+          questions: [
+            { type: "Antonym", q: "What is the antonym of 'expand'?", options: ["Grow", "Shrink", "Stretch"], correct: 1, explanation: "'Shrink' (get smaller) is the opposite of 'expand' (get larger)." }, 
+            { type: "Synonym", q: "What is a synonym for 'furious'?", options: ["Calm", "Enraged", "Slightly mad"], correct: 1, explanation: "'Furious' and 'enraged' both describe extreme, fierce anger." },
+            { type: "Antonym", q: "What is the antonym of 'monopolize'?", options: ["Share", "Control", "Own"], correct: 0, explanation: "'Share' is the antonym of monopolizing or taking exclusive control." },
+            { type: "Synonym", q: "What is a synonym for 'authentic'?", options: ["Genuine", "Fake", "Copy"], correct: 0, explanation: "'Authentic' and 'genuine' mean real or original." },
+            { type: "Antonym", q: "What is the antonym of 'optimistic'?", options: ["Pessimistic", "Hopeful", "Positive"], correct: 0, explanation: "'Pessimistic' (expecting bad outcomes) is opposite of 'optimistic'." },
+            { type: "Synonym", q: "What is a synonym for 'diligent'?", options: ["Hardworking", "Lazy", "Careless"], correct: 0, explanation: "'Diligent' and 'hardworking' describe persistent effort." }
+          ] 
+        },
+        fill_sentence: { 
+          type: "quiz", 
+          title: "Complete the Sentence", 
+          questions: [
+            { type: "Fill in Blank", q: "Photosynthesis is the process plants use to convert sunlight into _____.", options: ["energy", "water", "soil"], correct: 0, explanation: "Photosynthesis allows plants to transform light into chemical energy/food." }, 
+            { type: "Fill in Blank", q: "The Earth's equator lies midway between the North and South _____.", options: ["Poles", "Rivers", "Oceans"], correct: 0, explanation: "The equator is the central imaginary line between the North and South Poles." },
+            { type: "Fill in Blank", q: "Electrons revolve in orbits around the atomic _____.", options: ["nucleus", "proton", "shell"], correct: 0, explanation: "Atoms feature electrons orbiting a central nucleus." },
+            { type: "Fill in Blank", q: "An author's perspective or attitude toward a subject is called their _____.", options: ["tone", "font", "length"], correct: 0, explanation: "Tone reflects the writer's attitude in a text." },
+            { type: "Fill in Blank", q: "Bioluminescent organisms emit their own natural _____.", options: ["light", "sound", "heat"], correct: 0, explanation: "Bioluminescence generates living cold light." },
+            { type: "Fill in Blank", q: "The water cycle includes evaporation, condensation, and _____.", options: ["precipitation", "friction", "erosion"], correct: 0, explanation: "Rain and snow are forms of precipitation in the water cycle." }
+          ] 
+        },
+        sentence: { 
+          type: "sentence", 
+          title: "Sentence Builder", 
+          questions: [
+            { words: ["entered", "The", "ship", "open", "space."], correct: "The ship entered open space.", explanation: "Subject ('The ship') + verb ('entered') + object ('open space.')." }, 
+            { words: ["brave", "The", "crew", "cheered", "loudly."], correct: "The brave crew cheered loudly.", explanation: "Subject ('The brave crew') + action/adverb ('cheered loudly.')." },
+            { words: ["steered", "Zara", "Captain", "asteroid", "through", "belt."], correct: "Captain Zara steered through asteroid belt.", explanation: "Proper noun subject + verb + prepositional path." },
+            { words: ["emits", "Bioluminescent", "light", "deep", "sea."], correct: "Bioluminescent light emits deep sea.", explanation: "Adjective noun subject + verb + location phrase." },
+            { words: ["Photosynthesis", "converts", "energy.", "sunlight", "into"], correct: "Photosynthesis converts sunlight into energy.", explanation: "Scientific process subject + verb + object transformation." },
+            { words: ["author", "expressed", "The", "a", "hopeful", "tone."], correct: "The author expressed a hopeful tone.", explanation: "Subject + verb + noun phrase object." }
+          ] 
+        }
+      }
+    }
+  }; 
+
+  var playBeep = (freq, type, dur) => {
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext; 
+      if (!AudioContext) return; 
+      const audioCtx = new AudioContext(); 
+      const oscillator = audioCtx.createOscillator(); 
+      const gainNode = audioCtx.createGain(); 
+      oscillator.type = type; 
+      oscillator.frequency.value = freq; 
+      gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime); 
+      gainNode.gain.exponentialRampToValueAtTime(1e-5, audioCtx.currentTime + dur); 
+      oscillator.connect(gainNode); 
+      gainNode.connect(audioCtx.destination); 
+      oscillator.start(); 
+      oscillator.stop(audioCtx.currentTime + dur); 
+    } catch (e) {
+      console.warn("Audio not supported or blocked"); 
+    } 
+  }; 
+
+  var BalloonPopGame = ({ onClose }) => {
+    const [timeLeft, setTimeLeft] = (0, import_react3.useState)(30); 
+    const [score, setScore] = (0, import_react3.useState)(0); 
+    const [balloons, setBalloons] = (0, import_react3.useState)([]); 
+
+    (0, import_react3.useEffect)(() => {
+      const t = setInterval(() => {
+        setTimeLeft((prev) => {
+          if (prev <= 1) { clearInterval(t); return 0; } 
+          return prev - 1; 
+        }); 
+      }, 1e3); 
+      return () => clearInterval(t); 
+    }, []); 
+
+    (0, import_react3.useEffect)(() => {
+      if (timeLeft === 0) { setTimeout(onClose, 3e3); } 
+    }, [timeLeft, onClose]); 
+
+    (0, import_react3.useEffect)(() => {
+      if (timeLeft > 0) {
+        const spawn = setInterval(() => {
+          setBalloons((prev) => [...prev, {
+            id: Date.now() + Math.random(), 
+            x: Math.random() * 80 + 10, 
+            color: ["bg-red-500", "bg-blue-500", "bg-green-500", "bg-yellow-500", "bg-purple-500"][Math.floor(Math.random() * 5)] 
+          }]); 
+        }, 700); 
+        return () => clearInterval(spawn); 
+      } 
+    }, [timeLeft]); 
+
+    const handlePop = (e, balloonId) => {
+      if (e) { 
+        if (e.cancelable) e.preventDefault(); 
+        e.stopPropagation(); 
+      } 
+      if (timeLeft === 0) return; 
+      playBeep(600, "sine", 0.1); 
+      setScore((s) => s + 1); 
+      setBalloons((prev) => prev.filter((x) => x.id !== balloonId)); 
+    }; 
+
+    return import_react3.default.createElement("div", { className: "fixed inset-0 bg-teal-900/90 z-[100] flex flex-col items-center justify-center overflow-hidden backdrop-blur-sm touch-none" },
+      import_react3.default.createElement("button", { onClick: onClose, className: "absolute top-4 right-4 bg-white/20 hover:bg-white/40 text-white font-bold px-4 py-2 rounded-xl text-lg z-20 transition-colors cursor-pointer" }, "✕ Close"),
+      timeLeft > 0 ? import_react3.default.createElement("h2", { className: "text-4xl md:text-5xl text-white font-extrabold mb-4 z-10 drop-shadow-lg text-center px-4" }, "🎈 Pop the Balloons! ", import_react3.default.createElement("br", null), import_react3.default.createElement("span", { className: "text-yellow-300" }, timeLeft, "s")) : import_react3.default.createElement("h2", { className: "text-5xl md:text-6xl text-white font-extrabold z-10 drop-shadow-lg text-center px-4" }, "Time's Up! ⏰", import_react3.default.createElement("br", null), import_react3.default.createElement("span", { className: "text-yellow-300" }, "You popped ", score, "!")),
+      balloons.map((b) => import_react3.default.createElement("button", { 
+        key: b.id, 
+        onPointerDown: (e) => handlePop(e, b.id), 
+        className: `absolute bottom-[-100px] w-20 h-24 rounded-t-[50%] rounded-b-[40%] cursor-pointer ${b.color} shadow-lg animate-[floatUp_3s_linear] hover:scale-110 active:scale-90 transition-transform touch-none select-none`, 
+        style: { left: `${b.x}%` } 
+      }, import_react3.default.createElement("div", { className: "absolute bottom-[-20px] left-1/2 w-1 h-6 bg-white/50 -translate-x-1/2" }))),
+      import_react3.default.createElement("style", null, `@keyframes floatUp { to { transform: translateY(-120vh); } }`)
+    ); 
+  }; 
+
+  var CandyGrabGame = ({ onClose }) => {
+    const [timeLeft, setTimeLeft] = (0, import_react3.useState)(20); 
+    const [score, setScore] = (0, import_react3.useState)(0); 
+    const [candies, setCandies] = (0, import_react3.useState)([]); 
+    const [basketBounce, setBasketBounce] = (0, import_react3.useState)(false);
+
+    const candyTypes = ["🍬", "🍭", "🍫", "🍩", "🧁", "🍪"];
+
+    (0, import_react3.useEffect)(() => {
+      const t = setInterval(() => {
+        setTimeLeft((prev) => {
+          if (prev <= 1) { clearInterval(t); return 0; } 
+          return prev - 1; 
+        }); 
+      }, 1e3); 
+      return () => clearInterval(t); 
+    }, []); 
+
+    (0, import_react3.useEffect)(() => {
+      if (timeLeft === 0) { setTimeout(onClose, 3e3); } 
+    }, [timeLeft, onClose]); 
+
+    (0, import_react3.useEffect)(() => {
+      if (timeLeft > 0) {
+        const spawn = setInterval(() => {
+          setCandies((prev) => [...prev, {
+            id: Date.now() + Math.random(), 
+            x: Math.random() * 80 + 10, 
+            candy: candyTypes[Math.floor(Math.random() * candyTypes.length)]
+          }]); 
+        }, 500); 
+        return () => clearInterval(spawn); 
+      } 
+    }, [timeLeft]); 
+
+    const handleGrab = (e, candyId) => {
+      if (e) { 
+        if (e.cancelable) e.preventDefault(); 
+        e.stopPropagation(); 
+      } 
+      if (timeLeft === 0) return; 
+      playBeep(900, "sine", 0.08); 
+      setScore((s) => s + 1); 
+      setCandies((prev) => prev.filter((x) => x.id !== candyId)); 
+      setBasketBounce(true);
+      setTimeout(() => setBasketBounce(false), 200);
+    }; 
+
+    return import_react3.default.createElement("div", { className: "fixed inset-0 bg-purple-900/90 z-[100] flex flex-col items-center justify-center overflow-hidden backdrop-blur-sm touch-none" },
+      import_react3.default.createElement("button", { onClick: onClose, className: "absolute top-4 right-4 bg-white/20 hover:bg-white/40 text-white font-bold px-4 py-2 rounded-xl text-lg z-20 transition-colors cursor-pointer" }, "✕ Close"),
+      timeLeft > 0 ? import_react3.default.createElement("h2", { className: "text-4xl md:text-5xl text-white font-extrabold mb-4 z-10 drop-shadow-lg text-center px-4" }, "🍬 Candy Grab! ", import_react3.default.createElement("br", null), import_react3.default.createElement("span", { className: "text-pink-300" }, timeLeft, "s")) : import_react3.default.createElement("h2", { className: "text-5xl md:text-6xl text-white font-extrabold z-10 drop-shadow-lg text-center px-4" }, "Time's Up! 🍭", import_react3.default.createElement("br", null), import_react3.default.createElement("span", { className: "text-yellow-300" }, "You grabbed ", score, " candies!")),
+      candies.map((c) => import_react3.default.createElement("button", { 
+        key: c.id, 
+        onPointerDown: (e) => handleGrab(e, c.id), 
+        className: "absolute top-[-80px] text-5xl md:text-6xl cursor-pointer animate-[fallDown_2.5s_linear] hover:scale-125 active:scale-90 transition-transform touch-none select-none drop-shadow-md", 
+        style: { left: `${c.x}%` } 
+      }, c.candy)),
+      import_react3.default.createElement("div", { className: `absolute bottom-4 left-1/2 -translate-x-1/2 flex flex-col items-center transition-transform duration-150 ${basketBounce ? "scale-125" : "scale-100"}` },
+        import_react3.default.createElement("div", { className: "text-6xl md:text-7xl drop-shadow-2xl" }, "🧺"),
+        import_react3.default.createElement("div", { className: "bg-pink-500 text-white font-extrabold text-xl px-4 py-1 rounded-full border-2 border-white shadow-lg -mt-3 z-10" }, score, " 🍬")
+      ),
+      import_react3.default.createElement("style", null, `@keyframes fallDown { to { transform: translateY(110vh); } }`)
+    ); 
+  }; 
+
+  function App() {
+    const [screen, setScreen] = (0, import_react3.useState)("home"); 
+    const [readAloud, setReadAloud] = (0, import_react3.useState)(false); 
+    const [charRange, setCharRange] = (0, import_react3.useState)({ start: -1, length: 0, spokenText: "" }); 
+    const [completedCategories, setCompletedCategories] = (0, import_react3.useState)(() => { try { const saved = localStorage.getItem("la-completed-categories"); if (saved) return JSON.parse(saved); } catch (e) {} return {}; }); 
+    const [students, setStudents] = (0, import_react3.useState)(() => { try { const saved = localStorage.getItem("la-workbook-students"); if (saved) return JSON.parse(saved); } catch (e) {} return [{ id: "1", name: "Guest Student", avatar: "🐶", stars: 0 }]; }); 
+    const [selectedAvatar, setSelectedAvatar] = (0, import_react3.useState)("🐶");
+    const [levelId, setLevelId] = (0, import_react3.useState)(null); 
+    const [moduleId, setModuleId] = (0, import_react3.useState)(null); 
+    const [activeStudentId, setActiveStudentId] = (0, import_react3.useState)(null); 
+    
+    // Active question queue state for supporting skip and re-queueing
+    const [questionQueue, setQuestionQueue] = (0, import_react3.useState)([]);
+    const [hasAnswered, setHasAnswered] = (0, import_react3.useState)(false); 
+    const [sessionScore, setSessionScore] = (0, import_react3.useState)(0); 
+    const [selectedOption, setSelectedOption] = (0, import_react3.useState)(null); 
+    const [warningMsg, setWarningMsg] = (0, import_react3.useState)(""); 
+    const [coinAnim, setCoinAnim] = (0, import_react3.useState)(false); 
+    const [activeRewardGame, setActiveRewardGame] = (0, import_react3.useState)(null); 
+    const [correctCount, setCorrectCount] = (0, import_react3.useState)(0); 
+    const [sentenceWords, setSentenceWords] = (0, import_react3.useState)([]); 
+    const [sentenceTarget, setSentenceTarget] = (0, import_react3.useState)(""); 
+
+    (0, import_react3.useEffect)(() => { if ("speechSynthesis" in window) { window.speechSynthesis.getVoices(); } }, []); 
+    (0, import_react3.useEffect)(() => { localStorage.setItem("la-workbook-students", JSON.stringify(students)); }, [students]); 
+    (0, import_react3.useEffect)(() => { localStorage.setItem("la-completed-categories", JSON.stringify(completedCategories)); }, [completedCategories]); 
+
+    // Speech synthesizer with exact character boundary tracking
+    const speakWithTracker = (text, onEnd) => {
+      if (!("speechSynthesis" in window)) return; 
+      window.speechSynthesis.cancel(); 
+      setCharRange({ start: -1, length: 0, spokenText: text }); 
+
+      const utterance = new SpeechSynthesisUtterance(text); 
+      utterance.rate = 0.75; 
+
+      const voices = window.speechSynthesis.getVoices(); 
+      const femaleVoice = voices.find((v) => v.lang.startsWith("en") && (v.name.includes("Female") || v.name.includes("Samantha") || v.name.includes("Zira") || v.name.includes("Victoria") || v.name.includes("Google US English"))) || voices.find((v) => v.lang.startsWith("en")); 
+      if (femaleVoice) utterance.voice = femaleVoice; 
+
+      utterance.onboundary = (e) => {
+        if (e.name === "word") {
+          const wordLength = e.charLength || (text.slice(e.charIndex).search(/\s/) !== -1 ? text.slice(e.charIndex).search(/\s/) : text.length - e.charIndex);
+          setCharRange({ start: e.charIndex, length: wordLength, spokenText: text }); 
+        } 
+      }; 
+
+      utterance.onend = () => {
+        setCharRange({ start: -1, length: 0, spokenText: "" }); 
+        if (onEnd) onEnd(); 
+      }; 
+
+      utterance.onerror = () => setCharRange({ start: -1, length: 0, spokenText: "" }); 
+      window.speechSynthesis.speak(utterance); 
+    }; 
+
+    (0, import_react3.useEffect)(() => {
+      if (!readAloud) {
+        if ("speechSynthesis" in window) window.speechSynthesis.cancel(); 
+        setCharRange({ start: -1, length: 0, spokenText: "" }); 
+        return; 
+      } 
+      if (screen === "story" && levelId && moduleId) {
+        speakWithTracker(WORKBOOK_DATA[levelId].modules[moduleId].story); 
+      } else if (screen === "quiz" && questionQueue.length > 0) {
+        const currentQ = questionQueue[0]; 
+        if (currentQ) {
+          const fullText = `${currentQ.q} ${currentQ.options.join(" ")}`; 
+          speakWithTracker(fullText); 
+        } 
+      } else if (screen === "sentence" && questionQueue.length > 0) {
+        const currentQ = questionQueue[0]; 
+        if (currentQ) {
+          speakWithTracker(`Build the sentence: ${currentQ.correct}`); 
+        } 
+      } 
+    }, [screen, questionQueue, levelId, moduleId, readAloud]); 
+
+    const addStudent = (name) => {
+      if (!name.trim()) return; 
+      const newStudent = { id: Date.now().toString(), name: name.trim(), avatar: selectedAvatar, stars: 0 }; 
+      setStudents([...students, newStudent]); 
+    }; 
+
+    const removeStudent = (id) => {
+      if (students.length === 1) {
+        setWarningMsg("You need at least one student!"); 
+        setTimeout(() => setWarningMsg(""), 2e3); 
+        return; 
+      } 
+      setStudents(students.filter((s) => s.id !== id)); 
+      if (activeStudentId === id) setActiveStudentId(null); 
+    }; 
+
+    const updateStudentAvatar = (studentId, newAvatar) => {
+      setStudents((prev) => prev.map((s) => s.id === studentId ? __spreadProps(__spreadValues({}, s), { avatar: newAvatar }) : s));
+    };
+
+    const startModule = (lvlId, modId) => {
+      setLevelId(lvlId); 
+      setModuleId(modId); 
+      setSessionScore(0); 
+      
+      const modData = WORKBOOK_DATA[lvlId].modules[modId]; 
+      // Initialize question queue
+      const initialQuestions = [...modData.questions];
+      setQuestionQueue(initialQuestions);
+
+      setHasAnswered(false); 
+      setSelectedOption(null); 
+      setWarningMsg(""); 
+      if (students.length === 1) setActiveStudentId(students[0].id); 
+      
+      if (modData.type === "story") { 
+        setScreen("story"); 
+      } else if (modData.type === "sentence") { 
+        initSentence(initialQuestions[0]); 
+        setScreen("sentence"); 
+      } else { 
+        setScreen("quiz"); 
+      } 
+    }; 
+
+    const initSentence = (qData) => {
+      setSentenceTarget(qData.correct); 
+      setSentenceWords(qData.words.map((w, i) => ({ id: i, text: w, used: false }))); 
+      setSelectedOption([]); 
+    }; 
+
+    const handleSentenceWordClick = (wordObj) => {
+      if (hasAnswered) return; 
+
+      if (readAloud) {
+        speakWithTracker(wordObj.text);
+      }
+
+      if (wordObj.used) {
+        setSelectedOption((prev) => prev.filter((id) => id !== wordObj.id)); 
+        setSentenceWords((prev) => prev.map((w) => w.id === wordObj.id ? __spreadProps(__spreadValues({}, w), { used: false }) : w)); 
+      } else {
+        setSelectedOption((prev) => [...prev, wordObj.id]); 
+        setSentenceWords((prev) => prev.map((w) => w.id === wordObj.id ? __spreadProps(__spreadValues({}, w), { used: true }) : w)); 
+      } 
+    }; 
+
+    const checkSentenceAnswer = () => {
+      if (!activeStudentId) {
+        setWarningMsg("Please select who is answering first!"); 
+        setTimeout(() => setWarningMsg(""), 2500); 
+        return; 
+      } 
+      const currentQ = questionQueue[0];
+      const currentSentence = selectedOption.map((id) => sentenceWords.find((w) => w.id === id).text).join(" "); 
+      const isCorrect = currentSentence === sentenceTarget; 
+      setHasAnswered(true); 
+
+      const speechMessage = isCorrect 
+        ? `Great Job! ${sentenceTarget}. ${currentQ.explanation || ''}` 
+        : `Oops! Correct answer: ${sentenceTarget}. ${currentQ.explanation || ''}`;
+
+      if (readAloud) {
+        speakWithTracker(speechMessage);
+      }
+
+      if (isCorrect) {
+        playBeep(800, "sine", 0.1); 
+        setSessionScore((prev) => prev + 1); 
+        awardStar(); 
+      } else {
+        playBeep(300, "square", 0.2); 
+      } 
+    }; 
+
+    const markCategoryComplete = () => {
+      if (levelId && moduleId) {
+        const key = `${levelId}_${moduleId}`; 
+        setCompletedCategories((prev) => __spreadProps(__spreadValues({}, prev), { [key]: true })); 
+      } 
+    }; 
+
+    const awardStar = () => {
+      setStudents((prev) => {
+        return prev.map((s) => {
+          if (s.id === activeStudentId) {
+            return __spreadProps(__spreadValues({}, s), { stars: (s.stars || 0) + 1 }); 
+          } 
+          return s; 
+        }); 
+      }); 
+      setCoinAnim(true); 
+      setTimeout(() => setCoinAnim(false), 1500); 
+
+      setCorrectCount((prev) => {
+        const nextCount = prev + 1;
+        if (nextCount >= 5) {
+          setTimeout(() => setActiveRewardGame("rewardPrompt"), 1200);
+          return 0; 
+        }
+        return nextCount;
+      });
+    }; 
+
+    const handleOptionSelect = (optionIndex, isCorrect, optText) => {
+      if (hasAnswered) return; 
+      if (!activeStudentId) {
+        setWarningMsg("Please select who is answering first!"); 
+        setTimeout(() => setWarningMsg(""), 2500); 
+        return; 
+      } 
+      const currentQ = questionQueue[0];
+      setWarningMsg(""); 
+      setHasAnswered(true); 
+      setSelectedOption(optionIndex); 
+
+      const speechMessage = isCorrect 
+        ? `${optText}. Correct! ${currentQ.explanation || ''}`
+        : `${optText}. ${currentQ.explanation ? 'Explanation: ' + currentQ.explanation : ''}`;
+
+      if (readAloud) {
+        speakWithTracker(speechMessage);
+      }
+
+      if (isCorrect) {
+        playBeep(800, "sine", 0.1); 
+        setSessionScore((prev) => prev + 1); 
+        awardStar(); 
+      } else {
+        playBeep(300, "square", 0.2); 
+      } 
+    }; 
+
+    const nextQuestion = () => {
+      const remaining = questionQueue.slice(1);
+      if (remaining.length > 0) {
+        setQuestionQueue(remaining);
+        setHasAnswered(false); 
+        const modData = WORKBOOK_DATA[levelId].modules[moduleId]; 
+        if (modData.type === "sentence") {
+          initSentence(remaining[0]); 
+        } else {
+          setSelectedOption(null); 
+        } 
+      } else {
+        markCategoryComplete(); 
+        setScreen("results"); 
+      } 
+    }; 
+
+    // Skip functionality: moves current question to end of queue
+    const skipQuestion = () => {
+      if (questionQueue.length <= 1) return; // Only 1 question left, no need to skip
+      const skippedItem = questionQueue[0];
+      const newQueue = [...questionQueue.slice(1), skippedItem];
+      
+      setQuestionQueue(newQueue);
+      setHasAnswered(false);
+      setSelectedOption(null);
+
+      const modData = WORKBOOK_DATA[levelId].modules[moduleId];
+      if (modData.type === "sentence") {
+        initSentence(newQueue[0]);
+      }
+    };
+
+    // Render karaoke text with highlighting
+    const renderTrackedText = (textString) => {
+      const words = [];
+      const regex = /\S+/g;
+      let match;
+      let lastIndex = 0;
+
+      while ((match = regex.exec(textString)) !== null) {
+        if (match.index > lastIndex) {
+          words.push({ text: textString.slice(lastIndex, match.index), isWord: false });
+        }
+        words.push({
+          text: match[0],
+          isWord: true,
+          startIndex: match.index,
+          endIndex: match.index + match[0].length
+        });
+        lastIndex = regex.lastIndex;
+      }
+      if (lastIndex < textString.length) {
+        words.push({ text: textString.slice(lastIndex), isWord: false });
+      }
+
+      const isCurrentlyActiveText = charRange.spokenText && charRange.spokenText.includes(textString);
+      const textOffsetInUtterance = isCurrentlyActiveText ? charRange.spokenText.indexOf(textString) : -1;
+
+      return words.map((item, i) => {
+        if (!item.isWord) {
+          return import_react3.default.createElement("span", { key: `space-${i}` }, item.text);
+        }
+
+        let isCurrentWord = false;
+        let isPastWord = false;
+
+        if (isCurrentlyActiveText && charRange.start !== -1) {
+          const absoluteWordStart = textOffsetInUtterance + item.startIndex;
+          const absoluteWordEnd = textOffsetInUtterance + item.endIndex;
+
+          isCurrentWord = charRange.start < absoluteWordEnd && (charRange.start + charRange.length) > absoluteWordStart;
+          isPastWord = absoluteWordEnd <= charRange.start;
+        }
+
+        return import_react3.default.createElement("span", {
+          key: `word-${i}`,
+          className: `inline-block relative transition-all duration-200 rounded px-1 my-0.5 ${
+            isCurrentWord 
+              ? "bg-yellow-300 text-teal-950 font-black scale-110 shadow-md z-20 border border-amber-400" 
+              : isPastWord 
+                ? "text-teal-900 font-semibold" 
+                : ""
+          }`
+        },
+        isCurrentWord && import_react3.default.createElement("span", {
+          className: "absolute -top-7 left-1/2 -translate-x-1/2 text-yellow-500 font-bold text-base animate-bounce pointer-events-none"
+        }, "🟡"),
+        item.text
+        );
+      });
+    }; 
+
+    const Header = () => import_react3.default.createElement("header", { className: "bg-teal-500 text-white p-4 md:p-6 relative flex flex-col md:flex-row justify-between items-center shadow-md z-10 gap-4" },
+      import_react3.default.createElement("div", { className: "flex items-center gap-3" },
+        import_react3.default.createElement(Star, { className: "text-yellow-300 w-8 h-8 fill-current" }),
+        import_react3.default.createElement("div", null,
+          import_react3.default.createElement("h1", { className: "text-2xl md:text-3xl font-extrabold tracking-wide" }, "Language Arts Explorer"),
+          import_react3.default.createElement("p", { className: "text-teal-100 text-sm md:text-base font-semibold flex items-center gap-2" }, 
+            "Reading & Vocabulary Adventure",
+            correctCount > 0 && import_react3.default.createElement("span", { className: "bg-amber-300 text-amber-950 px-2 py-0.5 rounded-full text-xs font-black" }, `${correctCount}/5 till Reward Game!`)
+          )
+        )
+      ),
+      import_react3.default.createElement("div", { className: "flex flex-wrap gap-2 justify-center" },
+        import_react3.default.createElement("button", {
+          onClick: () => {
+            const nextState = !readAloud; 
+            setReadAloud(nextState); 
+            if (!nextState && "speechSynthesis" in window) window.speechSynthesis.cancel(); 
+          }, 
+          className: `font-bold py-2 px-4 rounded-xl flex items-center gap-2 shadow-sm border-b-4 transition-colors active:border-b-0 active:translate-y-1 ${readAloud ? "bg-amber-400 hover:bg-amber-500 text-amber-950 border-amber-600" : "bg-teal-700 hover:bg-teal-800 text-teal-100 border-teal-900"}`
+        },
+        readAloud ? import_react3.default.createElement(Volume2, { size: 18 }) : import_react3.default.createElement(VolumeX, { size: 18 }),
+        " Read Aloud: ",
+        readAloud ? "ON" : "OFF"
+        ),
+        import_react3.default.createElement("button", { onClick: () => setActiveRewardGame("rewardPrompt"), className: "bg-pink-500 hover:bg-pink-600 transition-colors text-white font-bold py-2 px-4 rounded-xl flex items-center gap-2 shadow-sm border-b-4 border-pink-700 active:border-b-0 active:translate-y-1" }, import_react3.default.createElement(Gamepad, { size: 18 }), " Play Reward Game"),
+        import_react3.default.createElement("button", { onClick: () => setScreen("home"), className: "bg-teal-600 hover:bg-teal-700 transition-colors text-white font-bold py-2 px-4 rounded-xl flex items-center gap-2 shadow-sm border-b-4 border-teal-800 active:border-b-0 active:translate-y-1" }, import_react3.default.createElement(House, { size: 18 }), " Home")
+      )
+    ); 
+
+    const gradeOrder = ["K", "1", "2", "3", "4", "5"];
+
+    return import_react3.default.createElement("div", { className: "min-h-screen bg-teal-50 font-sans selection:bg-teal-200" },
+      import_react3.default.createElement("style", null, `
+        .bg-dots { background-image: radial-gradient(#ccfbf1 2px, transparent 2px); background-size: 30px 30px; } 
+        @keyframes bounce-up {0% { transform: translateY(0) scale(0.8); opacity: 0; } 20% { transform: translateY(-20px) scale(1.1); opacity: 1; } 80% { transform: translateY(-40px) scale(1); opacity: 1; } 100% { transform: translateY(-50px) scale(0.9); opacity: 0; } } 
+        .coin-anim { animation: bounce-up 1.5s ease-out forwards; } 
+      `),
+      import_react3.default.createElement(Header, null),
+      import_react3.default.createElement("main", { className: "bg-dots min-h-[calc(100vh-100px)] p-4 flex justify-center items-start pt-8 pb-12" },
+        import_react3.default.createElement("div", { className: "max-w-4xl w-full bg-white rounded-3xl shadow-2xl border-4 border-teal-100 overflow-hidden relative" },
+          screen === "home" && import_react3.default.createElement("div", { className: "p-8 text-center animate-in fade-in slide-in-from-bottom-4 duration-500" },
+            import_react3.default.createElement("h2", { className: "text-3xl font-bold text-gray-700 mb-8" }, "Choose Your Grade Level!"),
+            import_react3.default.createElement("div", { className: "grid md:grid-cols-2 gap-8" },
+              import_react3.default.createElement("div", { className: "space-y-3" },
+                import_react3.default.createElement("h3", { className: "font-bold text-gray-400 uppercase tracking-wider text-sm mb-2 text-left" }, "Select Grade"),
+                gradeOrder.map((lvl) => import_react3.default.createElement("button", { key: lvl, onClick: () => { setLevelId(lvl); setScreen("modules"); }, className: `w-full ${WORKBOOK_DATA[lvl].color} text-white font-bold py-4 px-6 rounded-2xl text-xl flex justify-center items-center transition-all shadow-md border-b-4 border-black/20 hover:-translate-y-1 active:border-b-0 active:translate-y-1` }, import_react3.default.createElement("span", null, WORKBOOK_DATA[lvl].levelName)))
+              ),
+              import_react3.default.createElement("div", { className: "space-y-4" },
+                import_react3.default.createElement("h3", { className: "font-bold text-gray-400 uppercase tracking-wider text-sm mb-2 text-left" }, "Classroom Tools"),
+                import_react3.default.createElement("button", { onClick: () => setScreen("students"), className: "w-full bg-slate-100 hover:bg-slate-200 text-slate-700 border-2 border-slate-300 font-bold py-5 px-6 rounded-2xl text-xl flex items-center gap-3 transition-all" }, import_react3.default.createElement(Users, { className: "text-blue-500" }), " Manage Students"),
+                import_react3.default.createElement("button", { onClick: () => setScreen("leaderboard"), className: "w-full bg-slate-100 hover:bg-slate-200 text-slate-700 border-2 border-slate-300 font-bold py-5 px-6 rounded-2xl text-xl flex items-center gap-3 transition-all" }, import_react3.default.createElement(Trophy, { className: "text-yellow-500" }), " Class Leaderboard")
+              )
+            )
+          ),
+          screen === "students" && import_react3.default.createElement("div", { className: "p-8 animate-in fade-in duration-300" },
+            import_react3.default.createElement("div", { className: "flex justify-between items-center mb-6" }, import_react3.default.createElement("h2", { className: "text-2xl font-bold text-gray-800 flex items-center gap-2" }, import_react3.default.createElement(Users, null), " Manage Students"), import_react3.default.createElement("button", { onClick: () => setScreen("home"), className: "text-gray-500 hover:text-gray-800 font-bold flex items-center gap-1" }, import_react3.default.createElement(ArrowLeft, { size: 18 }), " Back")),
+            warningMsg && import_react3.default.createElement("div", { className: "bg-red-100 text-red-700 p-3 rounded-xl mb-4 font-bold text-center" }, warningMsg),
+            import_react3.default.createElement("form", { onSubmit: (e) => { e.preventDefault(); addStudent(e.target.studentName.value); e.target.reset(); }, className: "flex flex-col gap-4 mb-8 bg-slate-50 p-4 rounded-2xl border-2 border-slate-200" },
+              import_react3.default.createElement("div", { className: "flex gap-2" },
+                import_react3.default.createElement("input", { name: "studentName", type: "text", placeholder: "Enter student name...", className: "flex-1 bg-white border-2 border-gray-200 rounded-xl px-4 py-3 text-lg focus:outline-none focus:border-teal-500 font-semibold", autoComplete: "off" }),
+                import_react3.default.createElement("button", { type: "submit", className: "bg-teal-500 hover:bg-teal-600 text-white font-bold px-6 py-3 rounded-xl flex items-center gap-2 transition-colors shrink-0" }, import_react3.default.createElement(UserPlus, { size: 20 }), " Add Student")
+              ),
+              import_react3.default.createElement("div", { className: "flex flex-col gap-1" },
+                import_react3.default.createElement("span", { className: "text-xs font-bold text-gray-500 uppercase tracking-wider" }, "Pick an Avatar:"),
+                import_react3.default.createElement("div", { className: "flex flex-wrap gap-2" },
+                  AVATARS.map((emoji) => import_react3.default.createElement("button", {
+                    type: "button",
+                    key: emoji,
+                    onClick: () => setSelectedAvatar(emoji),
+                    className: `text-2xl p-2 rounded-xl border-2 transition-all ${selectedAvatar === emoji ? "bg-teal-100 border-teal-500 scale-110 shadow-sm" : "bg-white border-gray-200 hover:bg-gray-100"}`
+                  }, emoji))
+                )
+              )
+            ),
+            import_react3.default.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4" }, students.map((s) => import_react3.default.createElement("div", { key: s.id, className: "bg-white border-2 border-gray-200 rounded-xl p-4 flex justify-between items-center shadow-sm" },
+              import_react3.default.createElement("div", { className: "flex items-center gap-3" },
+                import_react3.default.createElement("div", { className: "relative group" },
+                  import_react3.default.createElement("span", { className: "text-3xl bg-slate-100 p-2 rounded-xl block border border-slate-200" }, s.avatar || "🐶"),
+                  import_react3.default.createElement("div", { className: "hidden group-hover:flex absolute -top-12 left-0 bg-white border border-gray-200 shadow-xl rounded-xl p-1 gap-1 z-30" },
+                    AVATARS.map((av) => import_react3.default.createElement("button", { key: av, type: "button", onClick: () => updateStudentAvatar(s.id, av), className: "hover:scale-125 transition-transform" }, av))
+                  )
+                ),
+                import_react3.default.createElement("div", null,
+                  import_react3.default.createElement("div", { className: "font-bold text-gray-700" }, s.name),
+                  import_react3.default.createElement("div", { className: "text-sm text-yellow-600 font-bold flex items-center gap-1" }, import_react3.default.createElement(Star, { size: 14, className: "fill-current" }), " ", s.stars || 0)
+                )
+              ),
+              import_react3.default.createElement("button", { onClick: () => removeStudent(s.id), className: "text-red-400 hover:text-red-600 p-2 bg-red-50 hover:bg-red-100 rounded-lg transition-colors" }, import_react3.default.createElement(Trash2, { size: 18 }))
+            )))
+          ),
+          screen === "leaderboard" && import_react3.default.createElement("div", { className: "p-8 animate-in fade-in duration-300" },
+            import_react3.default.createElement("div", { className: "flex justify-between items-center mb-8" }, import_react3.default.createElement("h2", { className: "text-3xl font-bold text-gray-800 flex items-center gap-3" }, import_react3.default.createElement(Trophy, { className: "text-yellow-500 w-8 h-8" }), " Leaderboard"), import_react3.default.createElement("button", { onClick: () => setScreen("home"), className: "text-gray-500 hover:text-gray-800 font-bold flex items-center gap-1" }, import_react3.default.createElement(ArrowLeft, { size: 18 }), " Back")),
+            import_react3.default.createElement("div", { className: "space-y-3" }, [...students].sort((a, b) => (b.stars || 0) - (a.stars || 0)).map((s, idx) => import_react3.default.createElement("div", { key: s.id, className: "flex items-center bg-gray-50 border-2 border-gray-100 rounded-2xl p-4 shadow-sm" }, import_react3.default.createElement("div", { className: `w-10 h-10 flex items-center justify-center rounded-full font-bold text-lg mr-4 ${idx === 0 ? "bg-yellow-200 text-yellow-700" : idx === 1 ? "bg-gray-200 text-gray-600" : idx === 2 ? "bg-orange-200 text-orange-700" : "bg-teal-100 text-teal-700"}` }, idx + 1), import_react3.default.createElement("span", { className: "text-3xl mr-3" }, s.avatar || "🐶"), import_react3.default.createElement("div", { className: "text-xl font-bold text-gray-700 flex-1" }, s.name), import_react3.default.createElement("div", { className: "text-2xl font-extrabold text-yellow-500 flex items-center gap-2" }, s.stars || 0, " ", import_react3.default.createElement(Star, { size: 24, className: "fill-current" })))))
+          ),
+          screen === "modules" && import_react3.default.createElement("div", { className: "p-8 animate-in fade-in duration-300" },
+            import_react3.default.createElement("div", { className: "flex justify-between items-center mb-6" }, import_react3.default.createElement("span", { className: "bg-gray-100 text-gray-800 text-sm md:text-base font-bold px-4 py-2 rounded-full border-2 border-gray-200" }, WORKBOOK_DATA[levelId].levelName), import_react3.default.createElement("button", { onClick: () => setScreen("home"), className: "text-gray-500 hover:text-gray-800 font-bold flex items-center gap-1" }, import_react3.default.createElement(ArrowLeft, { size: 18 }), " Back")),
+            import_react3.default.createElement("h2", { className: "text-2xl font-bold text-gray-700 mb-6 text-center" }, "Select an Activity Category:"),
+            import_react3.default.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-4" }, [
+              { id: "story", label: "📖 Story Comprehension", bg: "bg-rose-400 hover:bg-rose-500 border-rose-600" },
+              { id: "phonics", label: "🔤 Phonics & Word Sounds", bg: "bg-cyan-500 hover:bg-cyan-600 border-cyan-700" },
+              { id: "vocab", label: "🧠 Vocabulary & Meanings", bg: "bg-emerald-400 hover:bg-emerald-500 border-emerald-600" },
+              { id: "syn_ant", label: "🔄 Synonyms & Antonyms", bg: "bg-amber-400 hover:bg-amber-500 border-amber-600" },
+              { id: "fill_sentence", label: "✏️ Fill in the Blank", bg: "bg-purple-400 hover:bg-purple-500 border-purple-600" },
+              { id: "sentence", label: "🧩 Sentence Builder", bg: "bg-indigo-400 hover:bg-indigo-500 border-indigo-600" }
+            ].map((mod) => { const isDone = completedCategories[`${levelId}_${mod.id}`]; return import_react3.default.createElement("button", { key: mod.id, onClick: () => startModule(levelId, mod.id), className: `${mod.bg} text-white font-bold py-5 px-6 rounded-2xl text-lg md:text-xl transition-all shadow-md border-b-4 flex justify-between items-center active:border-b-0 active:translate-y-1` }, import_react3.default.createElement("span", null, mod.label), isDone && import_react3.default.createElement("span", { className: "bg-white/90 text-green-700 text-xs font-black px-3 py-1 rounded-full shadow-sm flex items-center gap-1" }, "✅ Done")); }))
+          ),
+          screen === "story" && import_react3.default.createElement("div", { className: "p-8 animate-in fade-in duration-300" },
+            import_react3.default.createElement("div", { className: "flex justify-between items-center mb-6" }, import_react3.default.createElement("span", { className: "bg-teal-100 text-teal-800 text-sm font-bold px-4 py-2 rounded-full border-2 border-teal-200" }, WORKBOOK_DATA[levelId].modules[moduleId].title), import_react3.default.createElement("button", { onClick: () => setScreen("modules"), className: "text-gray-500 hover:text-gray-800 font-bold flex items-center gap-1" }, import_react3.default.createElement(ArrowLeft, { size: 18 }), " Back")),
+            import_react3.default.createElement("div", { className: "bg-amber-50 p-6 md:p-8 rounded-2xl border-2 border-amber-100 mb-8 shadow-inner relative" }, import_react3.default.createElement("button", { onClick: () => speakWithTracker(WORKBOOK_DATA[levelId].modules[moduleId].story), className: "absolute top-3 right-3 text-amber-800 hover:bg-amber-200/60 p-2 rounded-lg transition-colors flex items-center gap-1 font-bold text-sm" }, import_react3.default.createElement(Volume2, { size: 16 }), " Listen"), import_react3.default.createElement("p", { className: "text-xl md:text-3xl text-gray-800 leading-relaxed font-medium pt-2" }, renderTrackedText(WORKBOOK_DATA[levelId].modules[moduleId].story))),
+            import_react3.default.createElement("div", { className: "text-center flex justify-center gap-4" }, import_react3.default.createElement("button", { onClick: () => { setScreen("quiz"); }, className: "bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-8 rounded-2xl text-xl inline-flex items-center gap-2 transition-all shadow-md border-b-4 border-blue-700 active:border-b-0 active:translate-y-1" }, import_react3.default.createElement(Play, { className: "fill-current" }), " Let's Answer Questions!"))
+          ),
+          screen === "quiz" && (() => {
+            const currentQ = questionQueue[0]; 
+            const totalRemaining = questionQueue.length;
+            if (!currentQ) return null;
+            return import_react3.default.createElement("div", { className: "p-6 md:p-8 animate-in fade-in duration-300 relative" },
+              coinAnim && import_react3.default.createElement("div", { className: "absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none z-50 coin-anim flex flex-col items-center" }, import_react3.default.createElement("span", { className: "text-5xl font-black text-yellow-400 drop-shadow-lg stroke-black stroke-2" }, "+1 Star!"), import_react3.default.createElement(Star, { size: 64, className: "text-yellow-400 fill-yellow-300 drop-shadow-lg mt-2 animate-spin" })),
+              import_react3.default.createElement("div", { className: "flex justify-between items-center mb-6" }, 
+                import_react3.default.createElement("button", { onClick: () => setScreen("modules"), className: "text-gray-400 hover:text-gray-700 font-bold flex items-center gap-1 text-sm bg-gray-100 px-3 py-1 rounded-full" }, import_react3.default.createElement(ArrowLeft, { size: 14 }), " Back"), 
+                import_react3.default.createElement("div", { className: "text-sm font-bold text-gray-500 bg-gray-100 px-4 py-2 rounded-full border-2 border-gray-200" }, totalRemaining, " question", totalRemaining > 1 ? "s" : "", " left")
+              ),
+              import_react3.default.createElement("div", { className: "mb-6 bg-blue-50 p-4 rounded-2xl border-2 border-blue-100" }, import_react3.default.createElement("div", { className: "text-sm font-bold text-blue-800 uppercase tracking-wide mb-3 text-center" }, "Who is answering?"), import_react3.default.createElement("div", { className: "flex flex-wrap justify-center gap-2" }, students.map((s) => import_react3.default.createElement("button", { key: s.id, onClick: () => !hasAnswered && setActiveStudentId(s.id), disabled: hasAnswered, className: `px-4 py-2 rounded-xl font-bold border-2 transition-all flex items-center gap-2 ${activeStudentId === s.id ? "bg-blue-500 text-white border-blue-600 scale-105 shadow-md" : "bg-white text-gray-600 border-gray-300 hover:border-blue-300 hover:bg-blue-50"} ${hasAnswered && activeStudentId !== s.id ? "opacity-50" : ""}` }, import_react3.default.createElement("span", { className: "text-xl" }, s.avatar || "🐶"), s.name, " ", import_react3.default.createElement("span", { className: "text-xs opacity-80 flex items-center gap-1" }, "(", s.stars || 0, " ", import_react3.default.createElement(Star, { size: 10, className: "fill-current" }), ")")))), warningMsg && import_react3.default.createElement("p", { className: "text-red-500 font-bold text-center mt-3 animate-bounce" }, warningMsg)),
+              import_react3.default.createElement("div", { className: "mb-8 text-center relative" }, import_react3.default.createElement("button", { onClick: () => speakWithTracker(currentQ.q), className: "absolute right-0 top-0 text-blue-600 hover:bg-blue-100 p-2 rounded-lg transition-colors flex items-center gap-1 font-bold text-xs" }, import_react3.default.createElement(Volume2, { size: 18 }), " Read"), import_react3.default.createElement("span", { className: "inline-block bg-yellow-100 text-yellow-800 text-xs font-bold px-3 py-1 rounded-full mb-3 uppercase tracking-wide border border-yellow-200 shadow-sm" }, currentQ.type), import_react3.default.createElement("h3", { className: "text-2xl md:text-4xl font-extrabold text-gray-800 leading-snug px-8" }, renderTrackedText(currentQ.q))),
+              import_react3.default.createElement("div", { className: "space-y-3 max-w-2xl mx-auto" }, currentQ.options.map((optText, index) => { const isCorrectAnswer = index === currentQ.correct; const isSelected = selectedOption === index; let btnClass = "bg-white border-2 border-gray-200 text-gray-700 hover:border-blue-400 hover:bg-blue-50"; let icon = null; if (hasAnswered) { if (isCorrectAnswer) { btnClass = "bg-green-100 border-green-500 text-green-800 scale-[1.02] shadow-md z-10"; icon = import_react3.default.createElement(CircleCheck, { className: "text-green-600" }); } else if (isSelected) { btnClass = "bg-red-50 border-red-400 text-red-700 opacity-80"; icon = import_react3.default.createElement(CircleX, { className: "text-red-500" }); } else { btnClass = "bg-gray-50 border-gray-200 text-gray-400 opacity-50"; } } return import_react3.default.createElement("div", { key: index, className: "flex items-center gap-2" }, import_react3.default.createElement("button", { onClick: () => speakWithTracker(optText), className: "p-3 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-xl transition-colors shrink-0", title: "Read option aloud" }, import_react3.default.createElement(Volume2, { size: 18 })), import_react3.default.createElement("button", { disabled: hasAnswered, onClick: () => handleOptionSelect(index, isCorrectAnswer, optText), className: `flex-1 text-left font-bold py-4 px-6 rounded-2xl text-lg md:text-xl transition-all flex justify-between items-center ${btnClass}` }, import_react3.default.createElement("span", null, renderTrackedText(optText)), icon)); })),
+              !hasAnswered && totalRemaining > 1 && import_react3.default.createElement("div", { className: "mt-6 text-center" }, 
+                import_react3.default.createElement("button", { onClick: skipQuestion, className: "bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold py-2 px-6 rounded-xl text-base inline-flex items-center gap-2 border-2 border-amber-300 transition-all active:scale-95" }, import_react3.default.createElement(FastForward, { size: 18 }), " Skip & Try Later")
+              ),
+              hasAnswered && import_react3.default.createElement("div", { className: "mt-6 animate-in fade-in slide-in-from-bottom-4 flex flex-col items-center gap-4" },
+                currentQ.explanation && import_react3.default.createElement("div", { className: "bg-amber-50 border-2 border-amber-200 text-amber-900 rounded-2xl p-4 max-w-2xl w-full text-center shadow-sm" },
+                  import_react3.default.createElement("span", { className: "font-black text-amber-700 block text-sm uppercase tracking-wider mb-1" }, "💡 Explanation:"),
+                  import_react3.default.createElement("p", { className: "text-lg font-semibold" }, renderTrackedText(currentQ.explanation))
+                ),
+                import_react3.default.createElement("button", { onClick: nextQuestion, className: "bg-teal-500 hover:bg-teal-600 text-white font-bold py-4 px-10 rounded-2xl text-xl inline-flex items-center gap-2 shadow-lg border-b-4 border-teal-700 active:border-b-0 active:translate-y-1 transition-all" }, "Next Question ➡️")
+              )
+            ); 
+          })(),
+          screen === "sentence" && (() => {
+            const currentQ = questionQueue[0]; 
+            const totalRemaining = questionQueue.length;
+            if (!currentQ) return null;
+            return import_react3.default.createElement("div", { className: "p-6 md:p-8 animate-in fade-in duration-300 relative" },
+              coinAnim && import_react3.default.createElement("div", { className: "absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none z-50 coin-anim flex flex-col items-center" }, import_react3.default.createElement("span", { className: "text-5xl font-black text-yellow-400 drop-shadow-lg stroke-black stroke-2" }, "+1 Star!"), import_react3.default.createElement(Star, { size: 64, className: "text-yellow-400 fill-yellow-300 drop-shadow-lg mt-2 animate-spin" })),
+              import_react3.default.createElement("div", { className: "flex justify-between items-center mb-6" }, 
+                import_react3.default.createElement("button", { onClick: () => setScreen("modules"), className: "text-gray-400 hover:text-gray-700 font-bold flex items-center gap-1 text-sm bg-gray-100 px-3 py-1 rounded-full" }, import_react3.default.createElement(ArrowLeft, { size: 14 }), " Back"), 
+                import_react3.default.createElement("div", { className: "text-sm font-bold text-gray-500 bg-gray-100 px-4 py-2 rounded-full border-2 border-gray-200" }, totalRemaining, " sentence", totalRemaining > 1 ? "s" : "", " left")
+              ),
+              import_react3.default.createElement("div", { className: "mb-6 bg-indigo-50 p-4 rounded-2xl border-2 border-indigo-100" }, import_react3.default.createElement("div", { className: "text-sm font-bold text-indigo-800 uppercase tracking-wide mb-3 text-center" }, "Who is building?"), import_react3.default.createElement("div", { className: "flex flex-wrap justify-center gap-2" }, students.map((s) => import_react3.default.createElement("button", { key: s.id, onClick: () => !hasAnswered && setActiveStudentId(s.id), disabled: hasAnswered, className: `px-4 py-2 rounded-xl font-bold border-2 transition-all flex items-center gap-2 ${activeStudentId === s.id ? "bg-indigo-500 text-white border-indigo-600 scale-105 shadow-md" : "bg-white text-gray-600 border-gray-300 hover:border-indigo-300 hover:bg-indigo-50"} ${hasAnswered && activeStudentId !== s.id ? "opacity-50" : ""}` }, import_react3.default.createElement("span", { className: "text-xl" }, s.avatar || "🐶"), s.name, " ", import_react3.default.createElement("span", { className: "text-xs opacity-80 flex items-center gap-1" }, "(", s.stars || 0, " ", import_react3.default.createElement(Star, { size: 10, className: "fill-current" }), ")")))), warningMsg && import_react3.default.createElement("p", { className: "text-red-500 font-bold text-center mt-3 animate-bounce" }, warningMsg)),
+              import_react3.default.createElement("div", { className: "mb-8 text-center flex items-center justify-center gap-2" }, import_react3.default.createElement("button", { onClick: () => speakWithTracker(`Build the sentence: ${currentQ.correct}`), className: "text-indigo-600 hover:bg-indigo-100 p-2 rounded-lg transition-colors flex items-center gap-1 font-bold text-xs" }, import_react3.default.createElement(Volume2, { size: 18 }), " Read"), import_react3.default.createElement("h3", { className: "text-2xl font-extrabold text-gray-800 leading-snug" }, "Tap the words in the correct order:")),
+              import_react3.default.createElement("div", { className: "min-h-[80px] bg-gray-50 border-4 border-dashed border-gray-300 rounded-2xl p-4 mb-6 flex flex-wrap gap-2 items-center justify-center" }, selectedOption.length === 0 && import_react3.default.createElement("span", { className: "text-gray-400 font-bold" }, "Your sentence will appear here..."), selectedOption.map((id) => { const word = sentenceWords.find((w) => w.id === id); return import_react3.default.createElement("button", { key: `sel-${id}`, onClick: () => handleSentenceWordClick(word), disabled: hasAnswered, className: "bg-indigo-500 text-white font-bold py-2 px-4 rounded-xl shadow-sm hover:bg-indigo-600 transition-colors" }, word.text); })),
+              import_react3.default.createElement("div", { className: "flex flex-wrap justify-center gap-3 mb-8" }, sentenceWords.map((word) => import_react3.default.createElement("div", { key: `bank-wrap-${word.id}`, className: "flex items-center gap-1" }, import_react3.default.createElement("button", { onClick: () => speakWithTracker(word.text), className: "p-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg text-xs" }, import_react3.default.createElement(Volume2, { size: 14 })), import_react3.default.createElement("button", { onClick: () => handleSentenceWordClick(word), disabled: word.used || hasAnswered, className: `font-bold py-3 px-6 rounded-xl border-2 transition-all text-xl ${word.used ? "bg-gray-100 text-gray-300 border-gray-200 cursor-not-allowed" : "bg-white text-gray-700 border-gray-300 hover:border-indigo-400 hover:bg-indigo-50 shadow-sm active:scale-95"}` }, renderTrackedText(word.text))))),
+              !hasAnswered ? import_react3.default.createElement("div", { className: "text-center flex flex-col items-center gap-3" }, 
+                import_react3.default.createElement("button", { onClick: checkSentenceAnswer, disabled: selectedOption.length === 0, className: `font-bold py-4 px-10 rounded-2xl text-xl inline-flex items-center gap-2 shadow-lg border-b-4 transition-all ${selectedOption.length > 0 ? "bg-green-500 hover:bg-green-600 text-white border-green-700 active:border-b-0 active:translate-y-1" : "bg-gray-300 text-gray-500 border-gray-400 cursor-not-allowed"}` }, "Check Answer ✅"),
+                totalRemaining > 1 && import_react3.default.createElement("button", { onClick: skipQuestion, className: "bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold py-2 px-6 rounded-xl text-base inline-flex items-center gap-2 border-2 border-amber-300 transition-all active:scale-95" }, import_react3.default.createElement(FastForward, { size: 18 }), " Skip & Try Later")
+              ) : import_react3.default.createElement("div", { className: "text-center animate-in fade-in slide-in-from-bottom-4 flex flex-col items-center gap-4" },
+                import_react3.default.createElement("div", { className: `text-2xl font-bold ${selectedOption.map((id) => sentenceWords.find((w) => w.id === id).text).join(" ") === sentenceTarget ? "text-green-600" : "text-red-500"}` }, selectedOption.map((id) => sentenceWords.find((w) => w.id === id).text).join(" ") === sentenceTarget ? "Great Job!" : `Oops! Correct answer: ${sentenceTarget}`),
+                currentQ.explanation && import_react3.default.createElement("div", { className: "bg-amber-50 border-2 border-amber-200 text-amber-900 rounded-2xl p-4 max-w-2xl w-full text-center shadow-sm" },
+                  import_react3.default.createElement("span", { className: "font-black text-amber-700 block text-sm uppercase tracking-wider mb-1" }, "💡 Explanation:"),
+                  import_react3.default.createElement("p", { className: "text-lg font-semibold" }, renderTrackedText(currentQ.explanation))
+                ),
+                import_react3.default.createElement("button", { onClick: nextQuestion, className: "bg-teal-500 hover:bg-teal-600 text-white font-bold py-4 px-10 rounded-2xl text-xl inline-flex items-center gap-2 shadow-lg border-b-4 border-teal-700 active:border-b-0 active:translate-y-1 transition-all" }, "Next Sentence ➡️")
+              )
+            ); 
+          })(),
+          screen === "results" && (() => {
+            const modData = WORKBOOK_DATA[levelId].modules[moduleId]; 
+            const totalQ = modData.questions.length; 
+            const percentage = sessionScore / totalQ; 
+            let emoji = "💪", title = "Keep Practicing!"; 
+            if (percentage >= 0.9) { emoji = "🌟"; title = "Perfect Score!"; } 
+            else if (percentage >= 0.5) { emoji = "👍"; title = "Great Job!"; } 
+            return import_react3.default.createElement("div", { className: "p-8 text-center animate-in zoom-in duration-500 py-12" },
+              import_react3.default.createElement("div", { className: "text-7xl mb-6 animate-bounce" }, emoji),
+              import_react3.default.createElement("h2", { className: "text-4xl font-extrabold text-gray-800 mb-2" }, title),
+              import_react3.default.createElement("p", { className: "text-2xl text-gray-600 mb-8" }, "Session Score: ", import_react3.default.createElement("strong", { className: "text-teal-600 text-3xl" }, sessionScore), " / ", totalQ),
+              import_react3.default.createElement("div", { className: "flex flex-col sm:flex-row justify-center gap-4 max-w-md mx-auto" },
+                import_react3.default.createElement("button", { onClick: () => startModule(levelId, moduleId), className: "flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-4 px-6 rounded-2xl text-lg shadow-md border-b-4 border-green-700 active:border-b-0 active:translate-y-1 transition-all" }, "🔄 Play Again"),
+                import_react3.default.createElement("button", { onClick: () => setScreen("modules"), className: "flex-1 bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-6 rounded-2xl text-lg shadow-md border-b-4 border-blue-700 active:border-b-0 active:translate-y-1 transition-all" }, "🔙 Back to Menu")
+              )
+            ); 
+          })()
+        )
+      ),
+      activeRewardGame === "rewardPrompt" && import_react3.default.createElement("div", { className: "fixed inset-0 bg-black/70 z-[100] flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in" },
+        import_react3.default.createElement("div", { className: "bg-white rounded-3xl p-8 max-w-md w-full text-center shadow-2xl border-4 border-yellow-300 relative animate-in zoom-in-95" },
+          import_react3.default.createElement("div", { className: "text-6xl mb-4" }, "🎉"),
+          import_react3.default.createElement("h2", { className: "text-3xl font-extrabold text-gray-800 mb-2" }, "Awesome Job!"),
+          import_react3.default.createElement("p", { className: "text-gray-600 font-bold mb-6 text-lg" }, "You got 5 correct answers! Pick your reward game:"),
+          import_react3.default.createElement("div", { className: "space-y-4" },
+            import_react3.default.createElement("button", { onClick: () => setActiveRewardGame("candy"), className: "w-full bg-purple-500 hover:bg-purple-600 text-white font-bold py-4 px-6 rounded-2xl text-xl flex items-center justify-center gap-3 shadow-md border-b-4 border-purple-700 active:border-b-0 active:translate-y-1 transition-all cursor-pointer" }, "🍬 Candy Grab"),
+            import_react3.default.createElement("button", { onClick: () => setActiveRewardGame("balloon"), className: "w-full bg-pink-500 hover:bg-pink-600 text-white font-bold py-4 px-6 rounded-2xl text-xl flex items-center justify-center gap-3 shadow-md border-b-4 border-pink-700 active:border-b-0 active:translate-y-1 transition-all cursor-pointer" }, "🎈 Balloon Pop"),
+            import_react3.default.createElement("button", { onClick: () => setActiveRewardGame(null), className: "text-gray-400 hover:text-gray-600 font-bold text-sm pt-2 cursor-pointer" }, "Skip for now")
+          )
+        )
+      ),
+      activeRewardGame === "balloon" && import_react3.default.createElement(BalloonPopGame, { onClose: () => setActiveRewardGame(null) }),
+      activeRewardGame === "candy" && import_react3.default.createElement(CandyGrabGame, { onClose: () => setActiveRewardGame(null) })
+    ); 
+  } 
+
+  return __toCommonJS(stdin_exports); 
+})(); 
+
+document.addEventListener('DOMContentLoaded', function() {
+  const root = ReactDOM.createRoot(document.getElementById('root')); 
+  root.render(React.createElement(App.default)); 
+}); 
+</script> 
+</body> 
+</html>
+
