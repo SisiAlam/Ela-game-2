@@ -1,1 +1,454 @@
-{"error": "Invalid request"}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ELA Game 2</title>
+    <style>
+      :root {
+        --bg: #f5f7ff;
+        --panel: #ffffff;
+        --primary: #4f46e5;
+        --primary-soft: #eef2ff;
+        --accent: #f59e0b;
+        --green: #22c55e;
+        --text: #1f2937;
+        --muted: #6b7280;
+        --danger: #ef4444;
+      }
+
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: Arial, Helvetica, sans-serif;
+        background: linear-gradient(135deg, #eef4ff, #f6f7ff 40%, #effaf5);
+        color: var(--text);
+      }
+
+      .app {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 32px 18px 60px;
+      }
+
+      .topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 24px;
+      }
+
+      .brand {
+        font-size: clamp(1.6rem, 3vw, 2.5rem);
+        font-weight: 800;
+        color: var(--primary);
+      }
+
+      .score-pill {
+        background: var(--panel);
+        border-radius: 999px;
+        padding: 10px 18px;
+        box-shadow: 0 10px 30px rgba(79, 70, 229, 0.08);
+        font-weight: 700;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr;
+        gap: 24px;
+      }
+
+      .panel {
+        background: rgba(255,255,255,0.9);
+        border: 1px solid rgba(148,163,184,0.25);
+        border-radius: 22px;
+        box-shadow: 0 18px 45px rgba(15,23,42,0.08);
+        padding: 22px;
+      }
+
+      .badge {
+        display: inline-block;
+        background: var(--primary-soft);
+        color: var(--primary);
+        padding: 6px 12px;
+        border-radius: 999px;
+        font-weight: 700;
+        font-size: 0.8rem;
+        margin-bottom: 12px;
+      }
+
+      h2 {
+        font-size: clamp(1.3rem, 2vw, 2rem);
+        margin: 0 0 16px;
+      }
+
+      .question {
+        font-size: 1.2rem;
+        line-height: 1.5;
+        margin: 12px 0 20px;
+      }
+
+      .answers {
+        display: grid;
+        gap: 12px;
+      }
+
+      .answer {
+        border: 1px solid #dfe7ff;
+        background: #fff;
+        color: var(--text);
+        border-radius: 14px;
+        padding: 14px 16px;
+        text-align: left;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .answer:hover {
+        background: #f8faff;
+        border-color: var(--primary);
+        transform: translateY(-1px);
+      }
+
+      .answer.correct {
+        background: rgba(34,197,94,0.12);
+        border-color: var(--green);
+        color: #0f5132;
+      }
+
+      .answer.wrong {
+        background: rgba(239,68,68,0.1);
+        border-color: var(--danger);
+        color: #7f1d1d;
+      }
+
+      .explanation-box {
+        margin-top: 18px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 16px;
+      }
+
+      .explanation-box h3 {
+        margin: 0 0 8px;
+        font-size: 1rem;
+      }
+
+      .explanation-box p {
+        margin: 0;
+        line-height: 1.6;
+        color: var(--muted);
+      }
+
+      .read-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 10px 16px;
+        margin-top: 12px;
+        font-size: 0.95rem;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .read-btn:hover {
+        background: #4338ca;
+      }
+
+      .reward-box {
+        padding: 18px;
+      }
+
+      .reward-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 14px;
+      }
+
+      .timer {
+        background: #fff7ed;
+        color: #b45309;
+        border: 1px solid #fed7aa;
+        border-radius: 999px;
+        padding: 8px 12px;
+        font-weight: 800;
+      }
+
+      .game-area {
+        position: relative;
+        height: 260px;
+        background: linear-gradient(180deg, #dcfce7, #e0f2fe 55%, #fef3c7);
+        border-radius: 18px;
+        border: 1px solid rgba(148,163,184,0.2);
+        overflow: hidden;
+      }
+
+      .star {
+        position: absolute;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 30% 30%, #fff, #facc15 35%, #f59e0b 100%);
+        border: 3px solid rgba(255,255,255,0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.35rem;
+        cursor: pointer;
+        user-select: none;
+        transition: transform 0.15s ease;
+      }
+
+      .star:hover {
+        transform: scale(1.12);
+      }
+
+      .controls {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-top: 16px;
+      }
+
+      .primary-btn {
+        background: var(--primary);
+        border: none;
+        border-radius: 12px;
+        color: white;
+        padding: 10px 16px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .primary-btn.secondary {
+        background: #f3f4f6;
+        color: var(--text);
+      }
+
+      @media (max-width: 850px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <div class="topbar">
+        <div class="brand">ELA Game 2</div>
+        <div class="score-pill">Score: <span id="score">0</span></div>
+      </div>
+
+      <div class="grid">
+        <div class="panel">
+          <div class="badge">Reading Practice</div>
+          <h2 id="topic">Story Question</h2>
+          <div id="question" class="question"></div>
+          <div id="answers" class="answers"></div>
+
+          <div id="explanation" class="explanation-box" style="display:none;">
+            <h3>Why this answer?</h3>
+            <p id="explanationText"></p>
+            <button id="readBtn" class="read-btn">Read Aloud</button>
+          </div>
+        </div>
+
+        <div class="panel reward-box">
+          <div class="reward-header">
+            <h3>Reward Game</h3>
+            <div class="timer" id="rewardTimer">30s</div>
+          </div>
+          <div id="rewardGame" class="game-area"></div>
+          <div class="controls">
+            <button id="startReward" class="primary-btn">Start Easier Game</button>
+            <button id="nextQuestion" class="primary-btn secondary">Next Question</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const questions = [
+        {
+          topic: 'Story Question',
+          question: 'Who sat on the mat?',
+          answers: ['Sam', 'A dog', 'A bird'],
+          correct: 0,
+          explanation: 'The story says, “Sam sat on a mat.” That is the correct answer.'
+        },
+        {
+          topic: 'Phonics',
+          question: 'Which word rhymes with "cat"?',
+          answers: ['Dog', 'Hat', 'Sun'],
+          correct: 1,
+          explanation: 'Cat and hat both end with the -at sound family.'
+        },
+        {
+          topic: 'Vocabulary',
+          question: 'Which one is an animal?',
+          answers: ['Chair', 'Dog', 'Pencil'],
+          correct: 1,
+          explanation: 'A dog is a living animal. A chair and pencil are not.'
+        },
+        {
+          topic: 'Sentence Builder',
+          question: 'What is the correct sentence?',
+          answers: ['The dog runs.', 'Dog the runs.', 'Runs the dog.'],
+          correct: 0,
+          explanation: 'We start with the subject, then the action: “The dog runs.”'
+        }
+      ];
+
+      const state = {
+        index: 0,
+        score: 0,
+        answered: false,
+        rewardRunning: false
+      };
+
+      const elements = {
+        topic: document.getElementById('topic'),
+        question: document.getElementById('question'),
+        answers: document.getElementById('answers'),
+        explanation: document.getElementById('explanation'),
+        explanationText: document.getElementById('explanationText'),
+        score: document.getElementById('score'),
+        rewardGame: document.getElementById('rewardGame'),
+        rewardTimer: document.getElementById('rewardTimer'),
+        startReward: document.getElementById('startReward'),
+        nextQuestion: document.getElementById('nextQuestion'),
+        readBtn: document.getElementById('readBtn')
+      };
+
+      function renderQuestion() {
+        const current = questions[state.index];
+        state.answered = false;
+        elements.topic.textContent = current.topic;
+        elements.question.textContent = current.question;
+        elements.answers.innerHTML = '';
+        elements.explanation.style.display = 'none';
+
+        current.answers.forEach((option, idx) => {
+          const button = document.createElement('button');
+          button.className = 'answer';
+          button.textContent = option;
+          button.addEventListener('click', () => handleAnswer(idx, button));
+          elements.answers.appendChild(button);
+        });
+      }
+
+      function handleAnswer(index, button) {
+        if (state.answered) return;
+        state.answered = true;
+
+        const current = questions[state.index];
+        const buttons = [...document.querySelectorAll('.answer')];
+
+        buttons.forEach((btn, i) => {
+          btn.disabled = true;
+          if (i === current.correct) {
+            btn.classList.add('correct');
+          }
+          if (i === index && i !== current.correct) {
+            btn.classList.add('wrong');
+          }
+        });
+
+        if (index === current.correct) {
+          state.score += 10;
+          elements.score.textContent = state.score;
+        }
+
+        elements.explanationText.textContent = current.explanation;
+        elements.explanation.style.display = 'block';
+      }
+
+      function speakText(text) {
+        if (!('speechSynthesis' in window)) {
+          alert('Text-to-speech is not supported in this browser.');
+          return;
+        }
+
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'en-US';
+        utterance.rate = 0.9;
+        utterance.pitch = 1;
+        utterance.volume = 1;
+
+        if (window.speechSynthesis.speaking) {
+          window.speechSynthesis.cancel();
+          return;
+        }
+
+        window.speechSynthesis.speak(utterance);
+      }
+
+      function nextQuestion() {
+        state.index = (state.index + 1) % questions.length;
+        renderQuestion();
+      }
+
+      function startRewardGame() {
+        if (state.rewardRunning) return;
+        state.rewardRunning = true;
+        let timeLeft = 30;
+        elements.rewardTimer.textContent = `${timeLeft}s`;
+        elements.rewardGame.innerHTML = '';
+
+        const stars = [];
+        const spawnStar = () => {
+          const star = document.createElement('div');
+          star.className = 'star';
+          star.textContent = '⭐';
+          star.style.left = `${Math.random() * 75 + 5}%`;
+          star.style.top = `${Math.random() * 55 + 12}%`;
+
+          star.addEventListener('click', () => {
+            star.remove();
+            state.score += 2;
+            elements.score.textContent = state.score;
+          });
+
+          stars.push(star);
+          elements.rewardGame.appendChild(star);
+        };
+
+        const interval = setInterval(() => {
+          if (timeLeft <= 0) {
+            clearInterval(interval);
+            state.rewardRunning = false;
+            elements.rewardTimer.textContent = '0s';
+            return;
+          }
+
+          timeLeft -= 1;
+          elements.rewardTimer.textContent = `${timeLeft}s`;
+          if (timeLeft % 2 === 0) spawnStar();
+        }, 1000);
+
+        for (let i = 0; i < 5; i++) {
+          spawnStar();
+        }
+      }
+
+      elements.readBtn.addEventListener('click', () => {
+        const text = elements.explanationText.textContent;
+        speakText(text);
+      });
+
+      elements.startReward.addEventListener('click', startRewardGame);
+      elements.nextQuestion.addEventListener('click', nextQuestion);
+
+      renderQuestion();
+    </script>
+  </body>
+</html>
